@@ -1,10 +1,11 @@
 import React from "react";
 
-interface BentoCardProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface BentoCardProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
   className?: string;
   id?: string;
   hasError?: boolean;
+  interactive?: boolean;
 }
 
 export const BentoCard: React.FC<BentoCardProps> = ({
@@ -12,8 +13,13 @@ export const BentoCard: React.FC<BentoCardProps> = ({
   className = "",
   id,
   hasError = false,
+  interactive = false,
   ...props
 }) => {
+  const interactiveStyles = interactive
+    ? "hover:bg-surface-alt hover:border-border-strong cursor-pointer"
+    : "";
+
   return (
     <div
       id={id}
@@ -21,7 +27,7 @@ export const BentoCard: React.FC<BentoCardProps> = ({
         hasError
           ? "border-error ring-1 ring-error/20"
           : "border-border hover:border-border-strong"
-      } ${className}`}
+      } ${interactiveStyles} ${className}`.trim()}
       {...props}
     >
       {children}
