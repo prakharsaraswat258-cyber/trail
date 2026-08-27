@@ -7,7 +7,7 @@ import { Button } from '../../ui/Button';
 interface PhotoStepProps {
   photos: string[];
   onChange: (photos: string[]) => void;
-  headingRef: React.RefObject<HTMLHeadingElement | null>;
+  headingRef: React.RefObject<HTMLHeadingElement>;
 }
 
 export default function PhotoStep({

@@ -16,7 +16,7 @@ interface DateLocationStepProps {
   };
   errors: Record<string, string>;
   onChange: (field: string, value: any) => void;
-  headingRef: React.RefObject<HTMLHeadingElement | null>;
+  headingRef: React.RefObject<HTMLHeadingElement>;
 }
 
 export default function DateLocationStep({
