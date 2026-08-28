@@ -385,6 +385,7 @@ export default function MyPostsPage() {
               >
                 {cat}
               </button>
+            ))}
           </div>
 
           {/* Full-width mobile segmented tab switcher */}
