@@ -1,6 +1,6 @@
 /**
  * Shared Item Categories Enum & List
- * MUST BE IDENTICAL to the categories used across Penga (e.g. /lost)
+ * MUST BE IDENTICAL to the categories used across LPU Find (e.g. /lost)
  * Matching engine weights Category Alignment at 25%.
  */
 export const ITEM_CATEGORIES = [

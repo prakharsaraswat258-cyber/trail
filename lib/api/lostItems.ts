@@ -4,6 +4,10 @@ export interface FoundSearchResult {
   id: string;
   itemName: string;
   category: string;
+  itemType?: string;
+  color?: string;
+  brand?: string;
+  description?: string;
   thumbnailUrl?: string;
   foundLocationSummary: string;
   foundDate: string;
@@ -60,12 +64,64 @@ export interface TicketStatusResponse {
   updatedAt: string;
 }
 
-// Mock seed found items for quick search
+// Mock seed found items for quick search with rich attributes (Item Name, Brand, Type, Color, Location)
 const MOCK_FOUND_SEARCH_DATABASE: FoundSearchResult[] = [
+  {
+    id: 'f-mac-1',
+    itemName: 'Apple MacBook Pro 96W USB-C Power Adapter',
+    category: 'Electronics',
+    itemType: 'Laptop Charger',
+    color: 'White',
+    brand: 'Apple',
+    description: 'White Apple 96W USB-C power brick with standard 2m USB-C charging cable.',
+    thumbnailUrl: '',
+    foundLocationSummary: 'Central Library 2nd Floor Study Desk 14',
+    foundDate: '2026-08-28',
+  },
+  {
+    id: 'f-mac-2',
+    itemName: 'Apple MagSafe 3 MacBook Air Charger (Space Gray)',
+    category: 'Electronics',
+    itemType: 'Laptop Charger',
+    color: 'Space Gray',
+    brand: 'Apple',
+    description: 'Braided Space Gray MagSafe 3 charging cable attached to 35W Dual USB-C port adapter.',
+    thumbnailUrl: '',
+    foundLocationSummary: 'Science Complex Room 204 Computer Lab',
+    foundDate: '2026-08-27',
+  },
+  {
+    id: 'f-mac-3',
+    itemName: 'Anker 67W 3-Port USB-C Fast Charger',
+    category: 'Electronics',
+    itemType: 'Laptop Charger',
+    color: 'Black',
+    brand: 'Anker',
+    description: 'Compact black GaN charger suitable for MacBook Air/Pro, with black nylon braided cable.',
+    thumbnailUrl: '',
+    foundLocationSummary: 'Campus Dining Hall near Booth 8',
+    foundDate: '2026-08-27',
+  },
+  {
+    id: 'f-mac-4',
+    itemName: 'Apple MacBook Pro 14" (Space Gray)',
+    category: 'Electronics',
+    itemType: 'Laptop',
+    color: 'Space Gray',
+    brand: 'Apple',
+    description: 'M2 MacBook Pro in matte protective case with programming stickers.',
+    thumbnailUrl: '',
+    foundLocationSummary: 'Engineering & Technology Hall Room 302',
+    foundDate: '2026-08-26',
+  },
   {
     id: 'f-1',
     itemName: 'Apple iPhone 15 Pro (Titanium Blue)',
     category: 'Electronics',
+    itemType: 'Smartphone',
+    color: 'Titanium Blue',
+    brand: 'Apple',
+    description: 'Blue titanium finish with clear silicone protective bumper case.',
     thumbnailUrl: '',
     foundLocationSummary: 'Central Library 2nd Floor Study Room',
     foundDate: '2026-08-26',
@@ -74,6 +130,10 @@ const MOCK_FOUND_SEARCH_DATABASE: FoundSearchResult[] = [
     id: 'f-2',
     itemName: 'Brown Leather Bifold Wallet',
     category: 'Wallet',
+    itemType: 'Wallet',
+    color: 'Brown',
+    brand: 'Fossil',
+    description: 'Distressed brown leather bifold wallet with campus card slot.',
     thumbnailUrl: '',
     foundLocationSummary: 'Campus Dining Hall near table 14',
     foundDate: '2026-08-26',
@@ -82,6 +142,10 @@ const MOCK_FOUND_SEARCH_DATABASE: FoundSearchResult[] = [
     id: 'f-3',
     itemName: 'Hydro Flask 32oz Water Bottle (Olive Green)',
     category: 'Water Bottle',
+    itemType: 'Water Bottle',
+    color: 'Olive Green',
+    brand: 'Hydro Flask',
+    description: 'Olive green powder coated bottle with flex straw cap and national park decal.',
     thumbnailUrl: '',
     foundLocationSummary: 'Athletic Center Bleachers',
     foundDate: '2026-08-25',
@@ -90,6 +154,10 @@ const MOCK_FOUND_SEARCH_DATABASE: FoundSearchResult[] = [
     id: 'f-4',
     itemName: 'AirPods Pro 2 in Matte Black Case',
     category: 'Electronics',
+    itemType: 'Headphones',
+    color: 'Black',
+    brand: 'Apple',
+    description: 'AirPods Pro 2nd Gen inside a Spigen matte black rugged silicone sleeve.',
     thumbnailUrl: '',
     foundLocationSummary: 'Science Complex Room 102',
     foundDate: '2026-08-27',
@@ -98,18 +166,50 @@ const MOCK_FOUND_SEARCH_DATABASE: FoundSearchResult[] = [
     id: 'f-5',
     itemName: 'Student ID & Key Lanyard (Red Ribbon)',
     category: 'ID/Card',
+    itemType: 'ID Card / Keys',
+    color: 'Red',
+    brand: 'Campus Union',
+    description: 'Red lanyard with 2 brass keys, bicycle lock key, and plastic ID badge holder.',
     thumbnailUrl: '',
     foundLocationSummary: 'Student Union Information Desk',
     foundDate: '2026-08-27',
   },
   {
     id: 'f-6',
-    itemName: 'Sony WH-1000XM5 Wireless Headphones',
+    itemName: 'Sony WH-1000XM5 Wireless Headphones (Silver/White)',
     category: 'Electronics',
+    itemType: 'Headphones',
+    color: 'White',
+    brand: 'Sony',
+    description: 'Silver/Off-White noise canceling over-ear headphones in original gray zipper case.',
     thumbnailUrl: '',
     foundLocationSummary: 'Arts & Humanities Building Lobby',
     foundDate: '2026-08-24',
   },
+  {
+    id: 'f-7',
+    itemName: 'Dell 65W Type-C AC Power Adapter',
+    category: 'Electronics',
+    itemType: 'Laptop Charger',
+    color: 'Black',
+    brand: 'Dell',
+    description: 'Standard black Dell Type-C laptop charger with rubber strap.',
+    thumbnailUrl: '',
+    foundLocationSummary: 'Main Academic Hall Room 110',
+    foundDate: '2026-08-28',
+  },
+  {
+    id: 'f-8',
+    itemName: 'ASUS ROG Gaming Backpack (Black/Red)',
+    category: 'Bag',
+    itemType: 'Backpack',
+    color: 'Black',
+    brand: 'ASUS',
+    description: 'Black backpack with red trim, containing notebook and USB cables.',
+    thumbnailUrl: '',
+    foundLocationSummary: 'Athletic Center Locker Room Hallway',
+    foundDate: '2026-08-25',
+  }
 ];
 
 const TICKETS_STORAGE_KEY = 'penga:submitted-tickets';
@@ -136,26 +236,76 @@ function saveStoredTicket(ticket: TicketStatusResponse) {
 }
 
 /**
- * Quick search debounced query against found items
- * TODO: replace mock with live API (GET /api/found-items/search?q=...)
+ * Quick search query against found items with multi-keyword, color, type, and brand filtering
  */
-export async function searchFoundItems(query: string): Promise<{ results: FoundSearchResult[] }> {
+export async function searchFoundItems(
+  query: string,
+  selectedCategory?: string,
+  selectedColor?: string
+): Promise<{ results: FoundSearchResult[] }> {
   // Simulate brief network latency
-  await new Promise((resolve) => setTimeout(resolve, 100));
+  await new Promise((resolve) => setTimeout(resolve, 80));
 
   const cleanQuery = query.trim().toLowerCase();
-  if (!cleanQuery) {
+  const tokens = cleanQuery ? cleanQuery.split(/\s+/).filter(Boolean) : [];
+
+  if (tokens.length === 0 && (!selectedCategory || selectedCategory === 'All') && (!selectedColor || selectedColor === 'All')) {
     return { results: [] };
   }
 
-  // Filter mock database
+  // Filter mock database using multi-token and attribute search
   const matches = MOCK_FOUND_SEARCH_DATABASE.filter((item) => {
-    return (
-      item.itemName.toLowerCase().includes(cleanQuery) ||
-      item.category.toLowerCase().includes(cleanQuery) ||
-      item.foundLocationSummary.toLowerCase().includes(cleanQuery)
-    );
-  }).slice(0, 5);
+    // Check Category filter
+    if (
+      selectedCategory &&
+      selectedCategory !== 'All' &&
+      item.category.toLowerCase() !== selectedCategory.toLowerCase() &&
+      item.itemType?.toLowerCase() !== selectedCategory.toLowerCase()
+    ) {
+      return false;
+    }
+
+    // Check Color filter
+    if (
+      selectedColor &&
+      selectedColor !== 'All' &&
+      (!item.color || !item.color.toLowerCase().includes(selectedColor.toLowerCase()))
+    ) {
+      return false;
+    }
+
+    // If no text query but filters match
+    if (tokens.length === 0) {
+      return true;
+    }
+
+    // Combine all item attributes into a single searchable string
+    const searchableContent = [
+      item.itemName,
+      item.category,
+      item.itemType || '',
+      item.color || '',
+      item.brand || '',
+      item.description || '',
+      item.foundLocationSummary
+    ].join(' ').toLowerCase();
+
+    // Check that every token typed is matched in the item's attributes
+    return tokens.every((token) => searchableContent.includes(token));
+  });
+
+  // Sort by relevance (exact phrase match or title match at top)
+  matches.sort((a, b) => {
+    const aText = `${a.itemName} ${a.color || ''} ${a.itemType || ''}`.toLowerCase();
+    const bText = `${b.itemName} ${b.color || ''} ${b.itemType || ''}`.toLowerCase();
+
+    const aExact = cleanQuery && aText.includes(cleanQuery);
+    const bExact = cleanQuery && bText.includes(cleanQuery);
+
+    if (aExact && !bExact) return -1;
+    if (!aExact && bExact) return 1;
+    return 0;
+  });
 
   return { results: matches };
 }

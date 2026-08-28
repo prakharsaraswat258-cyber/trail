@@ -2,8 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Penga — Report Lost Item</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#FAF8F3">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>Penga — Search Lost &amp; Found</title>
   <!-- Google Fonts: Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -51,32 +55,44 @@
       font-family: 'Inter', sans-serif;
       font-size: 14px;
       line-height: 1.6;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
     }
     .touch-target {
       min-height: 44px;
       min-width: 44px;
     }
+    .scrollbar-none::-webkit-scrollbar {
+      display: none;
+    }
+    .scrollbar-none {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
   </style>
 </head>
-<body class="bg-canvas text-text-primary min-h-screen flex flex-col antialiased selection:bg-accent selection:text-white">
+<body class="bg-canvas text-text-primary min-h-screen flex flex-col antialiased selection:bg-accent selection:text-white pb-[calc(5rem+env(safe-area-inset-bottom,0px))]">
 
   <!-- Header -->
-  <header class="w-full bg-surface border-b border-border sticky top-0 z-30">
+  <header class="w-full bg-surface/95 backdrop-blur-md border-b border-border sticky top-0 z-30 pt-[env(safe-area-inset-top,0px)]">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex items-center justify-between h-16">
-        <a href="#" onclick="showQuickSearch()" class="flex items-center gap-2.5 touch-target text-text-primary font-bold text-lg hover:text-accent transition-colors">
+      <div class="flex items-center justify-between h-14 sm:h-16">
+        <a href="#" onclick="showQuickSearch()" class="flex items-center gap-2 touch-target text-text-primary font-bold text-lg hover:text-accent transition-colors">
           <!-- Geometric Dragon Logo in Light Theme Accent -->
-          <svg class="w-7 h-7 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <svg class="w-6 h-6 sm:w-7 sm:h-7 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M4 18L12 6L20 18" />
             <path d="M12 6L16 12L21 9" />
             <path d="M8 12L3 15" />
           </svg>
           <span class="tracking-wide">Penga</span>
         </a>
-        <div class="flex items-center gap-3">
-          <span class="text-xs font-semibold text-text-secondary bg-surface-alt px-3 py-1 rounded border border-border">
-            Lost Recovery Service
-          </span>
+        <div class="flex items-center gap-2">
+          <a href="/my-posts" class="touch-target text-xs font-semibold text-text-secondary hover:text-text-primary bg-surface-alt px-3 py-1.5 rounded-lg border border-border flex items-center gap-1.5 hover:bg-surface-raised active:scale-[0.97] transition-all">
+            <svg class="w-3.5 h-3.5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+            <span>My Posts</span>
+          </a>
         </div>
       </div>
     </div>
@@ -85,16 +101,22 @@
   <!-- Main Container -->
   <main class="flex-1 py-8 px-4 sm:px-6 lg:px-8 max-w-4xl w-full mx-auto">
 
-    <!-- VIEW 1: Step 0 Quick Search Gate -->
-    <div id="view-quicksearch" class="space-y-8 animate-fade-in">
+    <!-- VIEW 1: Search Feature Portal -->
+    <div id="view-quicksearch" class="space-y-7 animate-fade-in">
       <div class="text-center space-y-2">
-        <h1 class="text-3xl font-bold text-text-primary tracking-tight">Report a Lost Item</h1>
-        <p class="text-sm text-text-secondary">Let&apos;s start by checking if it&apos;s already been found.</p>
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-light text-accent text-xs font-bold uppercase tracking-wider mb-1">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          Campus Item Search
+        </div>
+        <h1 class="text-3xl font-bold text-text-primary tracking-tight">Search Lost & Found</h1>
+        <p class="text-sm text-text-secondary max-w-lg mx-auto">Instant search for lost items by name, model, colour, or category (e.g. MacBook charger, AirPods, wallet).</p>
       </div>
 
       <div class="space-y-4">
         <div class="relative">
-          <label for="quick-search-input" class="sr-only">Search by item name, brand, or description</label>
+          <label for="quick-search-input" class="sr-only">Search by item, color, type or brand</label>
           <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-text-muted">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -105,14 +127,68 @@
             type="text"
             autofocus
             oninput="handleQuickSearch(this.value)"
-            placeholder="Search by item name, brand, or description…"
-            class="w-full min-h-[52px] pl-12 pr-12 py-3.5 text-base text-text-primary placeholder:text-text-muted bg-surface border border-border-strong rounded-lg shadow-sm focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/15 transition-colors"
+            placeholder="Search by item, colour, or type (e.g. MacBook charger white, AirPods, ID card)..."
+            class="w-full min-h-[52px] pl-12 pr-24 py-3.5 text-base text-text-primary placeholder:text-text-muted bg-surface border border-border-strong rounded-xl shadow-sm focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/15 transition-all"
           />
-          <div id="search-spinner" class="hidden absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-accent">
-            <svg class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
+          <div class="absolute inset-y-0 right-0 pr-3 flex items-center gap-1.5">
+            <button
+              id="search-clear-btn"
+              type="button"
+              onclick="clearSearchInput()"
+              aria-label="Clear search"
+              class="hidden w-8 h-8 rounded-full flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-surface-alt transition-colors cursor-pointer"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            <div id="search-spinner" class="hidden p-2 text-accent pointer-events-none">
+              <svg class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter Chips: Type & Color -->
+        <div class="space-y-2.5 pt-1">
+          <!-- Type Filter Chips -->
+          <div class="flex items-center gap-1.5 overflow-x-auto pb-1.5 scrollbar-none text-xs" id="category-chips-container">
+            <span class="text-text-muted font-medium pr-1 text-[11px] uppercase tracking-wider whitespace-nowrap">Type:</span>
+            <button type="button" onclick="setCategoryFilter('All')" class="cat-chip active px-3 py-1.5 rounded-lg font-medium whitespace-nowrap bg-accent text-white shadow-sm cursor-pointer">All Items</button>
+            <button type="button" onclick="setCategoryFilter('Laptop Charger')" class="cat-chip px-3 py-1.5 rounded-lg font-medium whitespace-nowrap bg-surface border border-border text-text-secondary hover:text-text-primary hover:bg-surface-alt cursor-pointer">⚡ Chargers</button>
+            <button type="button" onclick="setCategoryFilter('Laptop')" class="cat-chip px-3 py-1.5 rounded-lg font-medium whitespace-nowrap bg-surface border border-border text-text-secondary hover:text-text-primary hover:bg-surface-alt cursor-pointer">💻 Laptops</button>
+            <button type="button" onclick="setCategoryFilter('Smartphone')" class="cat-chip px-3 py-1.5 rounded-lg font-medium whitespace-nowrap bg-surface border border-border text-text-secondary hover:text-text-primary hover:bg-surface-alt cursor-pointer">📱 Phones</button>
+            <button type="button" onclick="setCategoryFilter('Headphones')" class="cat-chip px-3 py-1.5 rounded-lg font-medium whitespace-nowrap bg-surface border border-border text-text-secondary hover:text-text-primary hover:bg-surface-alt cursor-pointer">🎧 Audio</button>
+            <button type="button" onclick="setCategoryFilter('Bag')" class="cat-chip px-3 py-1.5 rounded-lg font-medium whitespace-nowrap bg-surface border border-border text-text-secondary hover:text-text-primary hover:bg-surface-alt cursor-pointer">🎒 Bags</button>
+            <button type="button" onclick="setCategoryFilter('ID/Card')" class="cat-chip px-3 py-1.5 rounded-lg font-medium whitespace-nowrap bg-surface border border-border text-text-secondary hover:text-text-primary hover:bg-surface-alt cursor-pointer">🪪 IDs & Cards</button>
+            <button type="button" onclick="setCategoryFilter('Water Bottle')" class="cat-chip px-3 py-1.5 rounded-lg font-medium whitespace-nowrap bg-surface border border-border text-text-secondary hover:text-text-primary hover:bg-surface-alt cursor-pointer">💧 Bottles</button>
+            <button type="button" onclick="setCategoryFilter('Wallet')" class="cat-chip px-3 py-1.5 rounded-lg font-medium whitespace-nowrap bg-surface border border-border text-text-secondary hover:text-text-primary hover:bg-surface-alt cursor-pointer">👛 Wallets</button>
+          </div>
+
+          <!-- Color Filter Chips -->
+          <div class="flex items-center gap-1.5 overflow-x-auto pb-1.5 scrollbar-none text-xs" id="color-chips-container">
+            <span class="text-text-muted font-medium pr-1 text-[11px] uppercase tracking-wider whitespace-nowrap">Colour:</span>
+            <button type="button" onclick="setColorFilter('All')" class="color-chip active px-3 py-1.5 rounded-lg font-medium whitespace-nowrap bg-text-primary text-surface shadow-sm cursor-pointer">All Colors</button>
+            <button type="button" onclick="setColorFilter('White')" class="color-chip inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium whitespace-nowrap bg-surface border border-border text-text-secondary hover:text-text-primary hover:bg-surface-alt cursor-pointer"><span class="w-2.5 h-2.5 rounded-full inline-block bg-slate-100 border border-slate-300"></span>White / Silver</button>
+            <button type="button" onclick="setColorFilter('Space Gray')" class="color-chip inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium whitespace-nowrap bg-surface border border-border text-text-secondary hover:text-text-primary hover:bg-surface-alt cursor-pointer"><span class="w-2.5 h-2.5 rounded-full inline-block bg-slate-500"></span>Space Gray</button>
+            <button type="button" onclick="setColorFilter('Black')" class="color-chip inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium whitespace-nowrap bg-surface border border-border text-text-secondary hover:text-text-primary hover:bg-surface-alt cursor-pointer"><span class="w-2.5 h-2.5 rounded-full inline-block bg-zinc-900"></span>Black</button>
+            <button type="button" onclick="setColorFilter('Blue')" class="color-chip inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium whitespace-nowrap bg-surface border border-border text-text-secondary hover:text-text-primary hover:bg-surface-alt cursor-pointer"><span class="w-2.5 h-2.5 rounded-full inline-block bg-blue-600"></span>Blue</button>
+            <button type="button" onclick="setColorFilter('Green')" class="color-chip inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium whitespace-nowrap bg-surface border border-border text-text-secondary hover:text-text-primary hover:bg-surface-alt cursor-pointer"><span class="w-2.5 h-2.5 rounded-full inline-block bg-emerald-600"></span>Olive / Green</button>
+            <button type="button" onclick="setColorFilter('Red')" class="color-chip inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium whitespace-nowrap bg-surface border border-border text-text-secondary hover:text-text-primary hover:bg-surface-alt cursor-pointer"><span class="w-2.5 h-2.5 rounded-full inline-block bg-rose-600"></span>Red</button>
+            <button type="button" onclick="setColorFilter('Brown')" class="color-chip inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium whitespace-nowrap bg-surface border border-border text-text-secondary hover:text-text-primary hover:bg-surface-alt cursor-pointer"><span class="w-2.5 h-2.5 rounded-full inline-block bg-amber-800"></span>Brown</button>
+          </div>
+
+          <!-- Popular Search Suggestions -->
+          <div class="flex flex-wrap items-center gap-1.5 pt-1 text-xs text-text-secondary">
+            <span class="text-text-muted text-[11px]">Popular searches:</span>
+            <button type="button" onclick="applyQuickSearch('MacBook charger white')" class="px-2.5 py-1 rounded-md bg-surface-alt hover:bg-surface-raised border border-border text-text-secondary hover:text-accent transition-colors cursor-pointer text-xs">MacBook charger white</button>
+            <button type="button" onclick="applyQuickSearch('MagSafe 3 charger')" class="px-2.5 py-1 rounded-md bg-surface-alt hover:bg-surface-raised border border-border text-text-secondary hover:text-accent transition-colors cursor-pointer text-xs">MagSafe 3 charger</button>
+            <button type="button" onclick="applyQuickSearch('Anker USB-C charger')" class="px-2.5 py-1 rounded-md bg-surface-alt hover:bg-surface-raised border border-border text-text-secondary hover:text-accent transition-colors cursor-pointer text-xs">Anker USB-C charger</button>
+            <button type="button" onclick="applyQuickSearch('iPhone 15 Pro')" class="px-2.5 py-1 rounded-md bg-surface-alt hover:bg-surface-raised border border-border text-text-secondary hover:text-accent transition-colors cursor-pointer text-xs">iPhone 15 Pro</button>
+            <button type="button" onclick="applyQuickSearch('AirPods Pro case')" class="px-2.5 py-1 rounded-md bg-surface-alt hover:bg-surface-raised border border-border text-text-secondary hover:text-accent transition-colors cursor-pointer text-xs">AirPods Pro case</button>
+            <button type="button" onclick="applyQuickSearch('Hydro Flask olive green')" class="px-2.5 py-1 rounded-md bg-surface-alt hover:bg-surface-raised border border-border text-text-secondary hover:text-accent transition-colors cursor-pointer text-xs">Hydro Flask olive green</button>
           </div>
         </div>
 
@@ -536,17 +612,172 @@
 
   </main>
 
+  <!-- Fixed Mobile Bottom Navigation Bar -->
+  <nav class="fixed bottom-0 inset-x-0 bg-surface/95 backdrop-blur-md border-t border-border z-40 pb-[env(safe-area-inset-bottom,0px)] sm:hidden shadow-lg" aria-label="Mobile navigation">
+    <div class="grid grid-cols-3 h-14">
+      <a href="/search" class="flex flex-col items-center justify-center gap-0.5 text-accent font-bold text-[11px] active:scale-95 transition-transform">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        <span>Search</span>
+      </a>
+      <button type="button" onclick="startWizard()" class="flex flex-col items-center justify-center gap-0.5 text-text-secondary hover:text-accent font-medium text-[11px] active:scale-95 transition-transform cursor-pointer">
+        <div class="w-7 h-7 rounded-full bg-accent text-white flex items-center justify-center shadow-sm -mt-2.5 border-2 border-surface">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
+          </svg>
+        </div>
+        <span>Report</span>
+      </button>
+      <a href="/my-posts" class="flex flex-col items-center justify-center gap-0.5 text-text-secondary hover:text-accent font-medium text-[11px] active:scale-95 transition-transform">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+        </svg>
+        <span>My Posts</span>
+      </a>
+    </div>
+  </nav>
+
   <script>
     // State
     const MOCK_FOUND = [
-      { id: 'f-1', itemName: 'Apple iPhone 15 Pro (Titanium Blue)', category: 'Electronics', location: 'Central Library 2nd Floor Study Room', date: '2026-08-26' },
-      { id: 'f-2', itemName: 'Brown Leather Bifold Wallet', category: 'Wallet', location: 'Campus Dining Hall near table 14', date: '2026-08-26' },
-      { id: 'f-3', itemName: 'Hydro Flask 32oz Water Bottle (Olive Green)', category: 'Water Bottle', location: 'Athletic Center Bleachers', date: '2026-08-25' },
-      { id: 'f-4', itemName: 'AirPods Pro 2 in Matte Black Case', category: 'Electronics', location: 'Science Complex Room 102', date: '2026-08-27' },
-      { id: 'f-5', itemName: 'Student ID & Key Lanyard (Red Ribbon)', category: 'ID/Card', location: 'Student Union Information Desk', date: '2026-08-27' }
+      {
+        id: 'f-mac-1',
+        itemName: 'Apple MacBook Pro 96W USB-C Power Adapter',
+        category: 'Electronics',
+        itemType: 'Laptop Charger',
+        color: 'White',
+        brand: 'Apple',
+        description: 'White Apple 96W USB-C power brick with standard 2m USB-C charging cable.',
+        location: 'Central Library 2nd Floor Study Desk 14',
+        date: '2026-08-28'
+      },
+      {
+        id: 'f-mac-2',
+        itemName: 'Apple MagSafe 3 MacBook Air Charger (Space Gray)',
+        category: 'Electronics',
+        itemType: 'Laptop Charger',
+        color: 'Space Gray',
+        brand: 'Apple',
+        description: 'Braided Space Gray MagSafe 3 charging cable attached to 35W Dual USB-C port adapter.',
+        location: 'Science Complex Room 204 Computer Lab',
+        date: '2026-08-27'
+      },
+      {
+        id: 'f-mac-3',
+        itemName: 'Anker 67W 3-Port USB-C Fast Charger',
+        category: 'Electronics',
+        itemType: 'Laptop Charger',
+        color: 'Black',
+        brand: 'Anker',
+        description: 'Compact black GaN charger suitable for MacBook Air/Pro, with black nylon braided cable.',
+        location: 'Campus Dining Hall near Booth 8',
+        date: '2026-08-27'
+      },
+      {
+        id: 'f-mac-4',
+        itemName: 'Apple MacBook Pro 14" (Space Gray)',
+        category: 'Electronics',
+        itemType: 'Laptop',
+        color: 'Space Gray',
+        brand: 'Apple',
+        description: 'M2 MacBook Pro in matte protective case with programming stickers.',
+        location: 'Engineering & Technology Hall Room 302',
+        date: '2026-08-26'
+      },
+      {
+        id: 'f-1',
+        itemName: 'Apple iPhone 15 Pro (Titanium Blue)',
+        category: 'Electronics',
+        itemType: 'Smartphone',
+        color: 'Titanium Blue',
+        brand: 'Apple',
+        description: 'Blue titanium finish with clear silicone protective bumper case.',
+        location: 'Central Library 2nd Floor Study Room',
+        date: '2026-08-26'
+      },
+      {
+        id: 'f-2',
+        itemName: 'Brown Leather Bifold Wallet',
+        category: 'Wallet',
+        itemType: 'Wallet',
+        color: 'Brown',
+        brand: 'Fossil',
+        description: 'Distressed brown leather bifold wallet with campus card slot.',
+        location: 'Campus Dining Hall near table 14',
+        date: '2026-08-26'
+      },
+      {
+        id: 'f-3',
+        itemName: 'Hydro Flask 32oz Water Bottle (Olive Green)',
+        category: 'Water Bottle',
+        itemType: 'Water Bottle',
+        color: 'Olive Green',
+        brand: 'Hydro Flask',
+        description: 'Olive green powder coated bottle with flex straw cap and national park decal.',
+        location: 'Athletic Center Bleachers',
+        date: '2026-08-25'
+      },
+      {
+        id: 'f-4',
+        itemName: 'AirPods Pro 2 in Matte Black Case',
+        category: 'Electronics',
+        itemType: 'Headphones',
+        color: 'Black',
+        brand: 'Apple',
+        description: 'AirPods Pro 2nd Gen inside a Spigen matte black rugged silicone sleeve.',
+        location: 'Science Complex Room 102',
+        date: '2026-08-27'
+      },
+      {
+        id: 'f-5',
+        itemName: 'Student ID & Key Lanyard (Red Ribbon)',
+        category: 'ID/Card',
+        itemType: 'ID Card / Keys',
+        color: 'Red',
+        brand: 'Campus Union',
+        description: 'Red lanyard with 2 brass keys, bicycle lock key, and plastic ID badge holder.',
+        location: 'Student Union Information Desk',
+        date: '2026-08-27'
+      },
+      {
+        id: 'f-6',
+        itemName: 'Sony WH-1000XM5 Wireless Headphones (Silver/White)',
+        category: 'Electronics',
+        itemType: 'Headphones',
+        color: 'White',
+        brand: 'Sony',
+        description: 'Silver/Off-White noise canceling over-ear headphones in original gray zipper case.',
+        location: 'Arts & Humanities Building Lobby',
+        date: '2026-08-24'
+      },
+      {
+        id: 'f-7',
+        itemName: 'Dell 65W Type-C AC Power Adapter',
+        category: 'Electronics',
+        itemType: 'Laptop Charger',
+        color: 'Black',
+        brand: 'Dell',
+        description: 'Standard black Dell Type-C laptop charger with rubber strap.',
+        location: 'Main Academic Hall Room 110',
+        date: '2026-08-28'
+      },
+      {
+        id: 'f-8',
+        itemName: 'ASUS ROG Gaming Backpack (Black/Red)',
+        category: 'Bag',
+        itemType: 'Backpack',
+        color: 'Black',
+        brand: 'ASUS',
+        description: 'Black backpack with red trim, containing notebook and USB cables.',
+        location: 'Athletic Center Locker Room Hallway',
+        date: '2026-08-25'
+      }
     ];
 
     let currentStep = 1;
+    let selectedCategoryFilter = 'All';
+    let selectedColorFilter = 'All';
     let formData = {
       category: '',
       itemName: '',
@@ -566,93 +797,182 @@
     const DRAFT_KEY = 'penga:lost-draft';
     let searchDebounceTimer = null;
 
-    // Init
     document.addEventListener('DOMContentLoaded', () => {
-      document.getElementById('step3-date').value = formData.dateLost;
-      document.getElementById('step3-date').max = formData.dateLost;
+      if (document.getElementById('step3-date')) {
+        document.getElementById('step3-date').value = formData.dateLost;
+        document.getElementById('step3-date').max = formData.dateLost;
+      }
       checkExistingDraft();
       renderWizardProgress();
+      handleQuickSearch('');
     });
 
-    // View Switching
-    function switchView(view) {
-      document.getElementById('view-quicksearch').classList.add('hidden');
-      document.getElementById('view-wizard').classList.add('hidden');
-      document.getElementById('view-tracker').classList.add('hidden');
+    function getColorDotClass(color) {
+      if (!color) return 'bg-gray-400';
+      const c = color.toLowerCase();
+      if (c.includes('white') || c.includes('silver')) return 'bg-slate-100 border border-slate-300';
+      if (c.includes('black')) return 'bg-zinc-900';
+      if (c.includes('gray') || c.includes('grey') || c.includes('space')) return 'bg-slate-500';
+      if (c.includes('blue')) return 'bg-blue-600';
+      if (c.includes('green') || c.includes('olive')) return 'bg-emerald-600';
+      if (c.includes('red')) return 'bg-rose-600';
+      if (c.includes('brown')) return 'bg-amber-800';
+      return 'bg-accent';
+    }
 
-      if (view === 'quicksearch') {
-        document.getElementById('view-quicksearch').classList.remove('hidden');
-      } else if (view === 'wizard') {
-        document.getElementById('view-wizard').classList.remove('hidden');
-      } else if (view === 'tracker') {
-        document.getElementById('view-tracker').classList.remove('hidden');
+    function setCategoryFilter(category) {
+      selectedCategoryFilter = category;
+      document.querySelectorAll('.cat-chip').forEach(btn => {
+        if (btn.getAttribute('onclick') === `setCategoryFilter('${category}')`) {
+          btn.className = 'cat-chip active px-3 py-1.5 rounded-lg font-medium whitespace-nowrap bg-accent text-white shadow-sm cursor-pointer';
+        } else {
+          btn.className = 'cat-chip px-3 py-1.5 rounded-lg font-medium whitespace-nowrap bg-surface border border-border text-text-secondary hover:text-text-primary hover:bg-surface-alt cursor-pointer';
+        }
+      });
+      const input = document.getElementById('quick-search-input');
+      handleQuickSearch(input ? input.value : '');
+    }
+
+    function setColorFilter(color) {
+      selectedColorFilter = color;
+      document.querySelectorAll('.color-chip').forEach(btn => {
+        const dot = btn.querySelector('span');
+        const dotHtml = dot ? dot.outerHTML : '';
+        if (btn.getAttribute('onclick') === `setColorFilter('${color}')`) {
+          btn.className = 'color-chip active inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium whitespace-nowrap bg-text-primary text-surface shadow-sm cursor-pointer';
+        } else {
+          btn.className = 'color-chip inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium whitespace-nowrap bg-surface border border-border text-text-secondary hover:text-text-primary hover:bg-surface-alt cursor-pointer';
+        }
+      });
+      const input = document.getElementById('quick-search-input');
+      handleQuickSearch(input ? input.value : '');
+    }
+
+    function applyQuickSearch(text) {
+      const input = document.getElementById('quick-search-input');
+      if (input) {
+        input.value = text;
+        handleQuickSearch(text);
+        input.focus();
       }
     }
 
-    function showQuickSearch() {
-      switchView('quicksearch');
-      setTimeout(() => document.getElementById('quick-search-input')?.focus(), 50);
-    }
-
-    function startWizard() {
-      switchView('wizard');
-      setStep(1);
+    function clearSearchInput() {
+      const input = document.getElementById('quick-search-input');
+      if (input) {
+        input.value = '';
+        setCategoryFilter('All');
+        setColorFilter('All');
+        handleQuickSearch('');
+        input.focus();
+      }
     }
 
     // Quick Search Logic
     function handleQuickSearch(query) {
       clearTimeout(searchDebounceTimer);
       const spinner = document.getElementById('search-spinner');
+      const clearBtn = document.getElementById('search-clear-btn');
       const resultsContainer = document.getElementById('search-results-container');
       const ariaAnnouncement = document.getElementById('search-aria-announcement');
       
-      const clean = query.trim().toLowerCase();
-      if (!clean) {
-        resultsContainer.classList.add('hidden');
-        resultsContainer.innerHTML = '';
-        ariaAnnouncement.textContent = '';
-        spinner.classList.add('hidden');
-        return;
+      const clean = (query || '').trim().toLowerCase();
+      const tokens = clean ? clean.split(/\s+/).filter(Boolean) : [];
+
+      if (clean) {
+        clearBtn.classList.remove('hidden');
+      } else {
+        clearBtn.classList.add('hidden');
       }
 
+      // Show all matches if query is empty
       spinner.classList.remove('hidden');
       searchDebounceTimer = setTimeout(() => {
         spinner.classList.add('hidden');
-        const matches = MOCK_FOUND.filter(item => 
-          item.itemName.toLowerCase().includes(clean) ||
-          item.category.toLowerCase().includes(clean) ||
-          item.location.toLowerCase().includes(clean)
-        ).slice(0, 5);
+        const matches = MOCK_FOUND.filter(item => {
+          // Category filter
+          if (
+            selectedCategoryFilter !== 'All' &&
+            item.category.toLowerCase() !== selectedCategoryFilter.toLowerCase() &&
+            (!item.itemType || item.itemType.toLowerCase() !== selectedCategoryFilter.toLowerCase())
+          ) {
+            return false;
+          }
+
+          // Color filter
+          if (
+            selectedColorFilter !== 'All' &&
+            (!item.color || !item.color.toLowerCase().includes(selectedColorFilter.toLowerCase()))
+          ) {
+            return false;
+          }
+
+          if (tokens.length === 0) return true;
+
+          const searchable = [
+            item.itemName,
+            item.category,
+            item.itemType || '',
+            item.color || '',
+            item.brand || '',
+            item.description || '',
+            item.location
+          ].join(' ').toLowerCase();
+
+          return tokens.every(token => searchable.includes(token));
+        });
+
+        // Sort exact title match first
+        matches.sort((a, b) => {
+          const aText = `${a.itemName} ${a.color || ''} ${a.itemType || ''}`.toLowerCase();
+          const bText = `${b.itemName} ${b.color || ''} ${b.itemType || ''}`.toLowerCase();
+          const aExact = clean && aText.includes(clean);
+          const bExact = clean && bText.includes(clean);
+          if (aExact && !bExact) return -1;
+          if (!aExact && bExact) return 1;
+          return 0;
+        });
 
         resultsContainer.classList.remove('hidden');
         if (matches.length === 0) {
-          ariaAnnouncement.textContent = 'No matches yet — you can still file a report below.';
+          ariaAnnouncement.textContent = 'No matching found items found yet.';
           resultsContainer.innerHTML = `
-            <div class="p-6 bg-surface-alt border border-border rounded-lg text-center space-y-1">
-              <p class="text-sm font-semibold text-text-primary">No matches yet — you can still file a report below.</p>
-              <p class="text-xs text-text-secondary">Filing a report will continuously notify you the moment someone turns in an item matching your description.</p>
+            <div class="p-6 bg-surface-alt border border-border rounded-xl text-center space-y-2">
+              <div class="w-10 h-10 rounded-full bg-surface border border-border flex items-center justify-center mx-auto text-text-muted">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+              <p class="text-sm font-semibold text-text-primary">No matching found items found yet.</p>
+              <p class="text-xs text-text-secondary max-w-md mx-auto">Try adjusting your search terms or colour/type filters, or file a lost report below so our automated system alerts you the moment it is turned in.</p>
             </div>
           `;
         } else {
           ariaAnnouncement.textContent = `${matches.length} possible ${matches.length === 1 ? 'match' : 'matches'} found.`;
           resultsContainer.innerHTML = `
             <div class="flex items-center justify-between text-xs text-text-secondary px-1 mb-2">
-              <span>Possible matches already reported found:</span>
-              <span class="font-semibold">${matches.length} results</span>
+              <span>Found items matching ${clean ? `"${clean}"` : 'selected filters'}${selectedCategoryFilter !== 'All' ? ` in ${selectedCategoryFilter}` : ''}${selectedColorFilter !== 'All' ? ` (${selectedColorFilter})` : ''}:</span>
+              <span class="font-semibold text-text-primary">${matches.length} ${matches.length === 1 ? 'match' : 'matches'}</span>
             </div>
             <div class="space-y-3">
               ${matches.map(m => `
                 <div class="bg-surface border border-border p-4 sm:p-5 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-border-strong transition-colors">
                   <div class="flex items-start sm:items-center gap-3.5">
                     <div class="w-12 h-12 rounded-lg bg-surface-alt border border-border flex items-center justify-center text-text-muted flex-shrink-0">
-                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
                     </div>
-                    <div>
-                      <div class="flex items-center gap-2">
+                    <div class="space-y-1 min-w-0">
+                      <div class="flex flex-wrap items-center gap-2">
                         <span class="font-bold text-sm sm:text-base text-text-primary">${m.itemName}</span>
-                        <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-surface-alt text-text-secondary border border-border">${m.category}</span>
+                        ${m.itemType ? `<span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold bg-accent-light text-accent border border-accent/20">${m.itemType}</span>` : ''}
+                        ${m.color ? `<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-medium bg-surface-alt text-text-primary border border-border"><span class="w-2.5 h-2.5 rounded-full inline-block ${getColorDotClass(m.color)}"></span>${m.color}</span>` : ''}
+                        <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-surface-alt text-text-secondary border border-border">${m.category}</span>
                       </div>
-                      <p class="text-xs sm:text-sm text-text-secondary">Found ${m.date} near ${m.location}</p>
+                      ${m.description ? `<p class="text-xs text-text-secondary line-clamp-1">${m.description}</p>` : ''}
+                      <p class="text-xs text-text-muted flex items-center gap-1">
+                        <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                        <span>Found ${m.date} near ${m.location}</span>
+                      </p>
                     </div>
                   </div>
                   <div class="flex flex-col sm:items-end gap-1.5 flex-shrink-0">
@@ -666,7 +986,7 @@
             </div>
           `;
         }
-      }, 400);
+      }, 250);
     }
 
     function showClaimToast(btn) {

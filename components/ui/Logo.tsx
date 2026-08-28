@@ -9,78 +9,28 @@ interface LogoProps {
 }
 
 export function Logo({
-  size = 'md',
   showWordmark = true,
   className = '',
   href = '/',
 }: LogoProps) {
-  const iconSizes = {
-    sm: { width: 24, height: 24 },
-    md: { width: 32, height: 32 },
-    lg: { width: 44, height: 44 },
-  };
-
-  const textSizes = {
-    sm: 'text-lg',
-    md: 'text-xl',
-    lg: 'text-3xl',
-  };
-
-  const { width, height } = iconSizes[size];
-
   const content = (
     <div className={`inline-flex items-center gap-2.5 select-none ${className}`}>
-      {/* Abstract Geometric Dragon Icon */}
-      <svg
-        width={width}
-        height={height}
-        viewBox="0 0 36 36"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        className="flex-shrink-0"
+      {/* // TODO: swap fallback for /public/lpu-logo.svg once official asset is added */}
+      <div
+        className="w-8 h-8 rounded-md bg-[#F2E8E2] dark:bg-[#3D2419] flex items-center justify-center flex-shrink-0"
         aria-hidden="true"
       >
-        {/* Dragon Head (Angular Triangle pointing up-right) */}
-        <path
-          d="M14 6L28 10L20 20Z"
-          fill="#C96442"
-          stroke="#C96442"
-          strokeWidth="1.5"
-          strokeLinejoin="miter"
-        />
-        {/* Sharp Eye accent */}
-        <polygon points="21,12 24,13 22,15" fill="#FFFFFF" />
-        {/* Sweeping Tail Line 1 */}
-        <path
-          d="M16 20L8 28L4 27"
-          stroke="#C96442"
-          strokeWidth="2.5"
-          strokeLinecap="square"
-          strokeLinejoin="miter"
-        />
-        {/* Sweeping Tail Line 2 */}
-        <path
-          d="M20 20L15 31L10 32"
-          stroke="#C96442"
-          strokeWidth="2.5"
-          strokeLinecap="square"
-          strokeLinejoin="miter"
-        />
-        {/* Crest Spine */}
-        <path
-          d="M14 6L8 12"
-          stroke="#C96442"
-          strokeWidth="2.5"
-          strokeLinecap="square"
-        />
-      </svg>
+        <span className="font-bold text-sm text-[#C96442] dark:text-[#D97757]">
+          LF
+        </span>
+      </div>
 
       {showWordmark && (
         <span
-          className={`font-bold tracking-wide text-text-primary ${textSizes[size]}`}
+          className="font-bold tracking-wide text-base md:text-lg text-[#1C1B18] dark:text-[#F5F2EC] whitespace-nowrap"
           style={{ fontFamily: 'Inter, sans-serif' }}
         >
-          Penga
+          LPU Find
         </span>
       )}
     </div>
@@ -90,8 +40,8 @@ export function Logo({
     return (
       <Link
         href={href}
-        className="inline-flex items-center min-h-[44px] min-w-[44px] focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 rounded-md"
-        aria-label="Penga Home"
+        className="inline-flex items-center min-h-[44px] min-w-[44px] py-1 px-1 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 rounded-md"
+        aria-label="LPU Find Home"
       >
         {content}
       </Link>

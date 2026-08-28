@@ -20,6 +20,19 @@ export default function SearchResultCard({ item }: SearchResultCardProps) {
     }, 3500);
   };
 
+  const getColorDotClass = (color?: string) => {
+    if (!color) return 'bg-gray-400';
+    const c = color.toLowerCase();
+    if (c.includes('white') || c.includes('silver')) return 'bg-slate-100 border border-slate-300';
+    if (c.includes('black')) return 'bg-zinc-900';
+    if (c.includes('gray') || c.includes('grey') || c.includes('space')) return 'bg-slate-500';
+    if (c.includes('blue')) return 'bg-blue-600';
+    if (c.includes('green') || c.includes('olive')) return 'bg-emerald-600';
+    if (c.includes('red')) return 'bg-rose-600';
+    if (c.includes('brown')) return 'bg-amber-800';
+    return 'bg-accent';
+  };
+
   return (
     <BentoCard className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-border hover:border-border-strong transition-colors">
       <div className="flex items-start sm:items-center gap-3.5">
@@ -48,17 +61,39 @@ export default function SearchResultCard({ item }: SearchResultCardProps) {
           )}
         </div>
 
-        <div className="space-y-1">
+        <div className="space-y-1.5 min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="text-sm sm:text-base font-bold text-text-primary">
               {item.itemName}
             </h3>
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-surface-alt text-text-secondary border border-border">
+            {item.itemType && (
+              <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold bg-accent-light text-accent border border-accent/20">
+                {item.itemType}
+              </span>
+            )}
+            {item.color && (
+              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-medium bg-surface-alt text-text-primary border border-border">
+                <span className={`w-2.5 h-2.5 rounded-full inline-block ${getColorDotClass(item.color)}`} />
+                {item.color}
+              </span>
+            )}
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-surface-alt text-text-secondary border border-border">
               {item.category}
             </span>
           </div>
-          <p className="text-xs sm:text-sm text-text-secondary">
-            Found {item.foundDate} near {item.foundLocationSummary}
+
+          {item.description && (
+            <p className="text-xs text-text-secondary line-clamp-1">
+              {item.description}
+            </p>
+          )}
+
+          <p className="text-xs text-text-muted flex items-center gap-1.5">
+            <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            <span>Found {item.foundDate} near {item.foundLocationSummary}</span>
           </p>
         </div>
       </div>

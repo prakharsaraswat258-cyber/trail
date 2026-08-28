@@ -22,7 +22,7 @@ const server = http.createServer((req, res) => {
   let pathname = parsedUrl.pathname;
 
   // Normalize path
-  if (pathname === '/' || pathname === '/lost' || pathname.startsWith('/lost/')) {
+  if (pathname === '/' || pathname === '/lost' || pathname.startsWith('/lost/') || pathname === '/search' || pathname.startsWith('/search')) {
     pathname = '/index.html';
   }
 

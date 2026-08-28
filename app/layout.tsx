@@ -10,7 +10,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'Penga — Unified Lost & Found Feed',
+  title: 'LPU Find — Unified Lost & Found Feed',
   description: 'AI-powered community lost and found match engine. Every item found. Every report resolved.',
 };
 

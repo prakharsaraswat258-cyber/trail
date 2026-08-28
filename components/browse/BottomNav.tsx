@@ -11,6 +11,7 @@ export function BottomNav() {
   const pathname = usePathname();
 
   const isHome = pathname === '/' || pathname === '/browse';
+  const isSearch = pathname === '/search' || pathname?.startsWith('/search');
   const isMyPosts = pathname === '/my-posts' || pathname?.startsWith('/my-posts');
 
   return (
@@ -29,15 +30,17 @@ export function BottomNav() {
             <span className={`text-[10px] ${isHome ? 'font-semibold' : 'font-medium'}`}>Home</span>
           </Link>
 
-          {/* Search - Static */}
-          <button
-            type="button"
+          {/* Search */}
+          <Link
+            href="/search"
             aria-label="Search"
-            className="flex-1 min-w-[44px] min-h-[44px] flex flex-col items-center justify-center gap-1 text-[#6E6B5F] hover:text-[#1C1B18]"
+            className={`flex-1 min-w-[44px] min-h-[44px] flex flex-col items-center justify-center gap-1 ${
+              isSearch ? 'text-[#C96442]' : 'text-[#6E6B5F] hover:text-[#1C1B18]'
+            }`}
           >
             <Search className="w-5 h-5" />
-            <span className="text-[10px] font-medium">Search</span>
-          </button>
+            <span className={`text-[10px] ${isSearch ? 'font-semibold' : 'font-medium'}`}>Search</span>
+          </Link>
 
           {/* Post - Trigger PostActionSheet */}
           <button

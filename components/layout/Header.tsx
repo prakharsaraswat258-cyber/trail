@@ -53,9 +53,9 @@ export function Header() {
   return (
     <header className="sticky top-0 z-40 w-full bg-white border-b border-border transition-shadow duration-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-18 flex items-center justify-between gap-4">
-        {/* Left: Penga Wordmark + Dragon Icon */}
+        {/* Left: LPU Find Wordmark + Logo */}
         <div className="flex items-center flex-shrink-0">
-          <Logo size="md" />
+          <Logo />
         </div>
 
         {/* Center/Right: Actions and Navigation */}

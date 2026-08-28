@@ -57,7 +57,7 @@ export const PengaLogo: React.FC<PengaLogoProps> = ({
 
       {showWordmark && (
         <span className={`font-bold tracking-wide text-text-primary ${textSizes[size]}`}>
-          Penga
+          LPU Find
         </span>
       )}
     </div>
