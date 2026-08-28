@@ -10,7 +10,7 @@ export function BrowseHeader() {
           P
         </div>
         <span className="text-lg font-bold text-[#1C1B18] tracking-tight">
-          Penga
+          LPU Find
         </span>
       </div>
 

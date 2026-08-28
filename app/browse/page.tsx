@@ -9,8 +9,6 @@ import { ItemCard } from '@/components/browse/ItemCard';
 import { EmptyState } from '@/components/browse/EmptyState';
 import { FeedSkeleton } from '@/components/browse/FeedSkeleton';
 import { MOCK_ITEMS, BrowseItem } from '@/components/browse/mockData';
-import { FloatingActionButton } from '@/components/browse/FloatingActionButton';
-import { PostActionSheet } from '@/components/PostActionSheet';
 import { BottomNav } from '@/components/browse/BottomNav';
 import { CheckCircle2 } from 'lucide-react';
 
@@ -18,7 +16,6 @@ export default function BrowsePage() {
   const [selectedType, setSelectedType] = useState<FilterType>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [highlightedItemId, setHighlightedItemId] = useState<string | null>(null);
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -174,16 +171,7 @@ export default function BrowsePage() {
         </div>
       )}
 
-      {/* 6. Floating Action Button */}
-      <FloatingActionButton onClick={() => setIsSheetOpen(true)} />
-
-      {/* Post Action Sheet */}
-      <PostActionSheet
-        isOpen={isSheetOpen}
-        onClose={() => setIsSheetOpen(false)}
-      />
-
-      {/* 7. Bottom Tab Navigation */}
+      {/* Bottom Tab Navigation */}
       <BottomNav />
     </div>
   );
