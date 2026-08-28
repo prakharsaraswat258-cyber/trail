@@ -1,6 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
+import { BottomNav } from '@/components/browse/BottomNav';
 import PostCard from './components/PostCard';
 import SkeletonCard from './components/SkeletonCard';
 import ConfirmDialog from './components/ConfirmDialog';
@@ -247,9 +250,18 @@ export default function MyPostsPage() {
           }`}
         >
           <div className="flex items-center justify-between gap-3 mb-3">
-            <h1 className="text-xl font-bold text-[#1C1B18] tracking-tight">
-              My Posts
-            </h1>
+            <div className="flex items-center gap-2">
+              <Link
+                href="/browse"
+                aria-label="Back to browse"
+                className="w-8 h-8 rounded-full flex items-center justify-center text-[#6E6B5F] hover:text-[#1C1B18] hover:bg-[#ECEAE2] transition-colors"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </Link>
+              <h1 className="text-xl font-bold text-[#1C1B18] tracking-tight">
+                My Posts
+              </h1>
+            </div>
             <span className="text-xs font-semibold text-[#6E6B5F] bg-[#ECEAE2] px-2.5 py-1 rounded-full">
               {posts.length} Total
             </span>
@@ -308,7 +320,7 @@ export default function MyPostsPage() {
         </header>
 
         {/* Mobile Posts Feed */}
-        <main className="flex-1 px-4 py-4 space-y-3 pb-[calc(2rem+env(safe-area-inset-bottom,0px))]">
+        <main className="flex-1 px-4 py-4 space-y-3 pb-[calc(5rem+env(safe-area-inset-bottom,0px))]">
           {loading ? (
             <div className="space-y-3">
               <SkeletonCard />
@@ -337,8 +349,11 @@ export default function MyPostsPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
-                <p className="text-xs font-semibold text-[#6E6B5F]">
-                  Resolved posts will appear here.
+                <h2 className="text-base font-bold text-[#1C1B18] mb-1">
+                  No resolved posts
+                </h2>
+                <p className="text-xs text-[#6E6B5F]">
+                  Posts marked as returned or recovered will appear here.
                 </p>
               </div>
             )
@@ -347,6 +362,7 @@ export default function MyPostsPage() {
               <PostCard
                 key={post.post_id}
                 post={post}
+                isBumpEligible={checkBumpEligible(post)}
                 isEditing={editingPostId === post.post_id}
                 onStartEdit={(id) => setEditingPostId(id)}
                 onCancelEdit={() => setEditingPostId(null)}
@@ -396,7 +412,6 @@ export default function MyPostsPage() {
             }
           }}
         />
-
         {/* Delete Confirmation Modal */}
         <ConfirmDialog
           isOpen={Boolean(deletingPost)}
@@ -404,7 +419,11 @@ export default function MyPostsPage() {
           onConfirm={handleConfirmDelete}
           title="Delete this post? This can't be undone."
         />
+
+        {/* Bottom Navigation */}
+        <BottomNav />
       </div>
     </div>
   );
 }
+
