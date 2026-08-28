@@ -22,8 +22,10 @@ const server = http.createServer((req, res) => {
   let pathname = parsedUrl.pathname;
 
   // Normalize path
-  if (pathname === '/' || pathname === '/my-posts' || pathname.startsWith('/my-posts/') || pathname === '/lost' || pathname.startsWith('/lost/')) {
+  if (pathname === '/my-posts' || pathname.startsWith('/my-posts/')) {
     pathname = '/my-posts.html';
+  } else if (pathname === '/' || pathname === '/lost' || pathname.startsWith('/lost/')) {
+    pathname = '/index.html';
   }
 
   let filePath = path.join(PUBLIC_DIR, pathname);

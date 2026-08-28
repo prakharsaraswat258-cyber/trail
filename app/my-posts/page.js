@@ -10,10 +10,45 @@ import ActionSheet from './components/ActionSheet';
 // Initial seed mock data
 const INITIAL_POSTS = [
   {
+    post_id: 'post_mac_01',
+    user_id: 'student_auth_id',
+    type: 'LOST',
+    title: 'Apple MacBook Pro 96W Charger (White)',
+    category: 'Electronics',
+    location: 'Central Library, 2nd Floor Study Room 14',
+    description: 'White Apple USB-C power brick with braided charging cable and small initial sticker.',
+    image_url: '',
+    status: 'OPEN',
+    claim_requests: [],
+    created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+    updated_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+  },
+  {
+    post_id: 'post_mac_02',
+    user_id: 'student_auth_id',
+    type: 'FOUND',
+    title: 'MagSafe 3 MacBook Charger (Space Gray)',
+    category: 'Electronics',
+    location: 'Science Complex, Room 204',
+    description: 'Braided Space Gray MagSafe 3 cable with dual USB-C power brick.',
+    image_url: '',
+    status: 'OPEN',
+    claim_requests: [
+      {
+        claim_id: 'clm_101',
+        claimant_id: 'student_552',
+        proof_note: 'Left it by the second monitor at desk 5.',
+        status: 'PENDING',
+      },
+    ],
+    created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    updated_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+  },
+  {
     post_id: 'post_7894',
     user_id: 'student_auth_id',
     type: 'LOST',
-    title: 'ASUS Laptop Bag',
+    title: 'ASUS Laptop Bag (Black/Red)',
     category: 'Bags',
     location: 'Block 34, 2nd Floor',
     description: 'Black backpack with ASUS ROG logo, containing charger and notebook.',
@@ -35,7 +70,7 @@ const INITIAL_POSTS = [
     post_id: 'post_7895',
     user_id: 'student_auth_id',
     type: 'LOST',
-    title: 'AirPods Pro Case (2nd Gen)',
+    title: 'AirPods Pro Case (2nd Gen - White)',
     category: 'Electronics',
     location: 'Library, Silent Study Zone 3',
     description: 'White case with a small scratch near the lightning port.',
@@ -49,7 +84,7 @@ const INITIAL_POSTS = [
     post_id: 'post_7896',
     user_id: 'student_auth_id',
     type: 'FOUND',
-    title: 'Blue Hydro Flask Water Bottle',
+    title: 'Blue Hydro Flask Water Bottle (Olive/Blue)',
     category: 'Accessories',
     location: 'Sports Complex, Court 2',
     description: '32oz wide mouth with stickers from national parks.',
@@ -91,7 +126,7 @@ const INITIAL_POSTS = [
     post_id: 'post_7898',
     user_id: 'student_auth_id',
     type: 'LOST',
-    title: 'Texas Instruments TI-84 Plus',
+    title: 'Texas Instruments TI-84 Plus Calculator (Black)',
     category: 'Electronics',
     location: 'Math Building, Room 104',
     description: 'Black calculator with initials PD written on the battery cover.',
@@ -221,12 +256,40 @@ export default function MyPostsPage() {
     await deletePost(targetId);
   };
 
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterCategory, setFilterCategory] = useState('All');
+
   const activePosts = posts.filter(
     (p) => p.status === 'OPEN' || p.status === 'IN_CLAIM'
   );
   const resolvedPosts = posts.filter((p) => p.status === 'RESOLVED');
+  const tabPosts = activeTab === 'active' ? activePosts : resolvedPosts;
 
-  const displayedPosts = activeTab === 'active' ? activePosts : resolvedPosts;
+  const displayedPosts = tabPosts.filter((post) => {
+    if (
+      filterCategory !== 'All' &&
+      post.category.toLowerCase() !== filterCategory.toLowerCase()
+    ) {
+      return false;
+    }
+
+    const clean = searchQuery.trim().toLowerCase();
+    if (!clean) return true;
+
+    const tokens = clean.split(/\s+/).filter(Boolean);
+    const searchable = [
+      post.title,
+      post.category,
+      post.location,
+      post.description || '',
+      post.type,
+      post.status,
+    ]
+      .join(' ')
+      .toLowerCase();
+
+    return tokens.every((token) => searchable.includes(token));
+  });
 
   const checkBumpEligible = (post) => {
     if (!post || post.status !== 'OPEN') return false;
@@ -235,6 +298,8 @@ export default function MyPostsPage() {
     return now - createdTime > 3 * 24 * 60 * 60 * 1000;
   };
 
+  const categoriesList = ['All', 'Electronics', 'Bags', 'Accessories', 'Documents'];
+
   return (
     <div className="bg-[#FAF8F3] min-h-screen text-[#1C1B18] flex justify-center">
       {/* Mobile Shell Container */}
@@ -242,17 +307,74 @@ export default function MyPostsPage() {
         
         {/* Sticky Mobile App Header */}
         <header
-          className={`sticky top-0 z-20 bg-[#FAF8F3] px-4 pt-4 pb-3 transition-colors duration-150 ${
+          className={`sticky top-0 z-20 bg-[#FAF8F3] px-4 pt-4 pb-3 space-y-3 transition-colors duration-150 ${
             isScrolled ? 'border-b border-black/7 shadow-sm' : ''
           }`}
         >
-          <div className="flex items-center justify-between gap-3 mb-3">
+          <div className="flex items-center justify-between gap-3">
+            <a
+              href="/search"
+              className="text-xs font-semibold text-[#C96442] hover:text-[#B5572E] flex items-center gap-1.5 bg-[#F2E8E2] px-3 py-1.5 rounded-lg transition-colors"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <span>Search / Report Lost</span>
+            </a>
+            <span className="text-xs font-semibold text-[#6E6B5F] bg-[#ECEAE2] px-2.5 py-1 rounded-full">
+              {posts.length} Total Posts
+            </span>
+          </div>
+
+          <div className="flex items-center justify-between">
             <h1 className="text-xl font-bold text-[#1C1B18] tracking-tight">
               My Posts
             </h1>
-            <span className="text-xs font-semibold text-[#6E6B5F] bg-[#ECEAE2] px-2.5 py-1 rounded-full">
-              {posts.length} Total
-            </span>
+          </div>
+
+          {/* Search Bar within My Posts */}
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#A8A49A]">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search posts (e.g. MacBook charger, bag)..."
+              className="w-full bg-white border border-black/14 text-[#1C1B18] placeholder-[#A8A49A] rounded-xl pl-9 pr-9 py-2 text-xs focus:outline-none focus:border-[#C96442] focus:ring-2 focus:ring-[#C96442]/15 shadow-sm"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="absolute inset-y-0 right-0 pr-2.5 flex items-center text-[#A8A49A] hover:text-[#1C1B18]"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
+          </div>
+
+          {/* Category Quick Chips */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-[11px] scrollbar-none">
+            {categoriesList.map((cat) => (
+              <button
+                key={cat}
+                type="button"
+                onClick={() => setFilterCategory(cat)}
+                className={`px-2.5 py-1 rounded-lg font-medium whitespace-nowrap transition-colors ${
+                  filterCategory === cat
+                    ? 'bg-[#1C1B18] text-white'
+                    : 'bg-[#ECEAE2] text-[#6E6B5F] hover:text-[#1C1B18]'
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
           </div>
 
           {/* Full-width mobile segmented tab switcher */}
@@ -263,7 +385,7 @@ export default function MyPostsPage() {
                 setActiveTab('active');
                 setEditingPostId(null);
               }}
-              className={`min-h-[40px] px-3 py-1.5 rounded-lg text-xs font-bold active:scale-[0.97] transition-all duration-100 flex items-center justify-center gap-1.5 ${
+              className={`min-h-[38px] px-3 py-1.5 rounded-lg text-xs font-bold active:scale-[0.97] transition-all duration-100 flex items-center justify-center gap-1.5 ${
                 activeTab === 'active'
                   ? 'bg-[#C96442] text-white shadow-sm'
                   : 'bg-transparent text-[#6E6B5F] hover:text-[#1C1B18]'
@@ -287,7 +409,7 @@ export default function MyPostsPage() {
                 setActiveTab('resolved');
                 setEditingPostId(null);
               }}
-              className={`min-h-[40px] px-3 py-1.5 rounded-lg text-xs font-bold active:scale-[0.97] transition-all duration-100 flex items-center justify-center gap-1.5 ${
+              className={`min-h-[38px] px-3 py-1.5 rounded-lg text-xs font-bold active:scale-[0.97] transition-all duration-100 flex items-center justify-center gap-1.5 ${
                 activeTab === 'resolved'
                   ? 'bg-[#C96442] text-white shadow-sm'
                   : 'bg-transparent text-[#6E6B5F] hover:text-[#1C1B18]'
