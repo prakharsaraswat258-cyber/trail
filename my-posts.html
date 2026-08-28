@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Penga — My Posts</title>
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- React 18 + ReactDOM + Babel for standalone live preview -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            canvas: '#FAF8F3',
+            surface: '#FFFFFF',
+            'surface-alt': '#F3F1EB',
+            'surface-raised': '#ECEAE2',
+            border: 'rgba(0, 0, 0, 0.07)',
+            'border-subtle': 'rgba(0, 0, 0, 0.07)',
+            'border-strong': 'rgba(0, 0, 0, 0.14)',
+            'text-primary': '#1C1B18',
+            'text-secondary': '#6E6B5F',
+            'text-muted': '#A8A49A',
+            accent: {
+              DEFAULT: '#C96442',
+              hover: '#B5572E',
+              light: '#F2E8E2',
+            },
+            success: '#059669',
+            error: '#DC2626',
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          borderRadius: {
+            lg: '8px',
+            md: '6px',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #FAF8F3;
+      color: #1C1B18;
+      font-family: 'Inter', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .touch-target {
+      min-height: 44px;
+      min-width: 44px;
+    }
+  </style>
+</head>
+<body class="bg-[#FAF8F3] text-text-primary min-h-screen antialiased selection:bg-accent selection:text-white">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    const INITIAL_POSTS = [
+      {
+        post_id: 'post_7894',
+        user_id: 'student_auth_id',
+        type: 'LOST',
+        title: 'ASUS Laptop Bag',
+        category: 'Bags',
+        location: 'Block 34, 2nd Floor',
+        description: 'Black backpack with ASUS ROG logo, containing charger and notebook.',
+        image_url: '',
+        status: 'OPEN',
+        claim_requests: [
+          {
+            claim_id: 'clm_102',
+            claimant_id: 'student_123',
+            proof_note: 'Blue carabiner attached to the left shoulder strap.',
+            status: 'PENDING',
+          },
+        ],
+        created_at: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+        updated_at: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+      },
+      {
+        post_id: 'post_7895',
+        user_id: 'student_auth_id',
+        type: 'LOST',
+        title: 'AirPods Pro Case (2nd Gen)',
+        category: 'Electronics',
+        location: 'Library, Silent Study Zone 3',
+        description: 'White case with a small scratch near the lightning port.',
+        image_url: '',
+        status: 'OPEN',
+        claim_requests: [],
+        created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+        updated_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+      },
+      {
+        post_id: 'post_7896',
+        user_id: 'student_auth_id',
+        type: 'FOUND',
+        title: 'Blue Hydro Flask Water Bottle',
+        category: 'Accessories',
+        location: 'Sports Complex, Court 2',
+        description: '32oz wide mouth with stickers from national parks.',
+        image_url: '',
+        status: 'IN_CLAIM',
+        claim_requests: [
+          {
+            claim_id: 'clm_103',
+            claimant_id: 'student_456',
+            proof_note: 'Has a Yosemite sticker and a slight dent at the bottom.',
+            status: 'PENDING',
+          },
+        ],
+        created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+        updated_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+      },
+      {
+        post_id: 'post_7897',
+        user_id: 'student_auth_id',
+        type: 'FOUND',
+        title: 'Student ID Card — John Doe',
+        category: 'Documents',
+        location: 'Cafeteria, Table 12',
+        description: 'Computer Science Department ID card found under chair.',
+        image_url: '',
+        status: 'RESOLVED',
+        claim_requests: [
+          {
+            claim_id: 'clm_104',
+            claimant_id: 'student_789',
+            proof_note: 'Provided matching student registration portal screenshot.',
+            status: 'APPROVED',
+          },
+        ],
+        created_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+        updated_at: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
+      },
+      {
+        post_id: 'post_7898',
+        user_id: 'student_auth_id',
+        type: 'LOST',
+        title: 'Texas Instruments TI-84 Plus',
+        category: 'Electronics',
+        location: 'Math Building, Room 104',
+        description: 'Black calculator with initials PD written on the battery cover.',
+        image_url: '',
+        status: 'RESOLVED',
+        claim_requests: [],
+        created_at: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+        updated_at: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString(),
+      },
+    ];
+
+    function StatusBadge({ status }) {
+      const configs = {
+        OPEN: { label: 'Open', className: 'text-[#059669] bg-[#ECFDF5]' },
+        IN_CLAIM: { label: 'In Verification', className: 'text-[#D97706] bg-[#FFFBEB]' },
+        RESOLVED: { label: 'Resolved', className: 'text-[#6B7280] bg-[#F9FAFB]' },
+      };
+      const current = configs[status] || configs.OPEN;
+      return (
+        <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-bold tracking-wide ${current.className}`}>
+          {current.label}
+        </span>
+      );
+    }
+
+    function SkeletonCard() {
+      return (
+        <div className="bg-white border border-black/7 rounded-xl p-4 w-full shadow-sm">
+          <div className="flex items-start gap-3">
+            <div className="w-14 h-14 rounded-lg bg-[#F3F1EB] animate-pulse shrink-0" />
+            <div className="flex-1 min-w-0 space-y-2">
+              <div className="flex items-center gap-2">
+                <div className="w-12 h-5 rounded-md bg-[#F3F1EB] animate-pulse" />
+                <div className="w-16 h-5 rounded-md bg-[#F3F1EB] animate-pulse" />
+              </div>
+              <div className="w-3/4 h-4 rounded bg-[#F3F1EB] animate-pulse" />
+              <div className="w-1/2 h-3.5 rounded bg-[#F3F1EB] animate-pulse" />
+            </div>
+          </div>
+          <div className="mt-3 pt-3 border-t border-black/7 flex items-center justify-between gap-2">
+            <div className="flex-1 h-9 rounded-lg bg-[#F3F1EB] animate-pulse" />
+            <div className="w-10 h-9 rounded-lg bg-[#F3F1EB] animate-pulse" />
+          </div>
+        </div>
+      );
+    }
+
+    function ConfirmDialog({ isOpen, onClose, onConfirm, title = "Delete this post? This can't be undone." }) {
+      useEffect(() => {
+        const handleKeyDown = (e) => {
+          if (e.key === 'Escape' && isOpen) onClose();
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+      }, [isOpen, onClose]);
+
+      if (!isOpen) return null;
+
+      return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true">
+          <div className="fixed inset-0 bg-black/40 transition-opacity" onClick={onClose} />
+          <div className="relative bg-white border border-black/7 rounded-2xl p-5 max-w-xs w-full shadow-2xl z-10 text-center">
+            <div className="w-11 h-11 rounded-full bg-red-50 text-[#DC2626] flex items-center justify-center mx-auto mb-3">
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </div>
+            <h2 className="text-base font-bold text-[#1C1B18] mb-2">{title}</h2>
+            <div className="grid grid-cols-2 gap-2 mt-5">
+              <button
+                type="button"
+                onClick={onClose}
+                className="min-h-[44px] px-3 py-2 text-sm font-semibold text-[#6E6B5F] bg-[#F3F1EB] hover:bg-[#ECEAE2] rounded-xl active:scale-[0.97] transition-transform"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={onConfirm}
+                className="min-h-[44px] px-3 py-2 bg-[#DC2626] hover:bg-red-700 text-white text-sm font-semibold rounded-xl active:scale-[0.97] transition-transform"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function EditForm({ post, onSave, onCancel }) {
+      const [title, setTitle] = useState(post.title || '');
+      const [category, setCategory] = useState(post.category || 'Electronics');
+      const [location, setLocation] = useState(post.location || '');
+      const [description, setDescription] = useState(post.description || '');
+
+      const categories = ['Electronics', 'Documents', 'Bags', 'Accessories', 'Other'];
+
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        onSave({
+          title: title.trim(),
+          category,
+          location: location.trim(),
+          description: description.trim(),
+        });
+      };
+
+      return (
+        <form onSubmit={handleSubmit} className="mt-3 pt-3 border-t border-black/7 space-y-3">
+          <div>
+            <label className="block text-xs font-bold text-[#6E6B5F] mb-1">Title</label>
+            <input
+              type="text"
+              required
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Item title"
+              className="w-full bg-white border border-black/14 text-[#1C1B18] placeholder-[#A8A49A] rounded-lg p-2.5 text-sm focus:outline-none focus:border-[#C96442] focus:ring-2 focus:ring-[#C96442]/15"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="block text-xs font-bold text-[#6E6B5F] mb-1">Category</label>
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="w-full bg-white border border-black/14 text-[#1C1B18] rounded-lg p-2.5 text-xs focus:outline-none focus:border-[#C96442]"
+              >
+                {categories.map((cat) => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-[#6E6B5F] mb-1">Location</label>
+              <input
+                type="text"
+                required
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                placeholder="Location"
+                className="w-full bg-white border border-black/14 text-[#1C1B18] placeholder-[#A8A49A] rounded-lg p-2.5 text-xs focus:outline-none focus:border-[#C96442]"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-[#6E6B5F] mb-1">Description</label>
+            <textarea
+              rows={2}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Description (optional)"
+              className="w-full bg-white border border-black/14 text-[#1C1B18] placeholder-[#A8A49A] rounded-lg p-2 text-xs focus:outline-none focus:border-[#C96442] resize-none"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-2 pt-1">
+            <button
+              type="button"
+              onClick={onCancel}
+              className="min-h-[40px] px-3 py-1.5 text-xs font-bold text-[#6E6B5F] bg-[#F3F1EB] rounded-lg active:scale-[0.97] transition-transform"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="min-h-[40px] px-3 py-1.5 bg-[#C96442] text-white text-xs font-bold rounded-lg active:scale-[0.97] transition-transform"
+            >
+              Save
+            </button>
+          </div>
+        </form>
+      );
+    }
+
+    function ActionSheet({ isOpen, onClose, post, onEdit, onBump, onDelete, isBumpEligible }) {
+      useEffect(() => {
+        const handleKeyDown = (e) => {
+          if (e.key === 'Escape' && isOpen) onClose();
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+      }, [isOpen, onClose]);
+
+      if (!isOpen || !post) return null;
+
+      return (
+        <div className="fixed inset-0 z-50 flex items-end justify-center" role="dialog" aria-modal="true">
+          <div className="fixed inset-0 bg-black/40 transition-opacity" onClick={onClose} />
+          <div className="relative w-full max-w-md bg-white rounded-t-2xl p-4 shadow-2xl z-10 max-h-[80vh] overflow-y-auto">
+            <div className="h-1.5 w-12 bg-black/14 rounded-full mx-auto mb-3" />
+            <div className="px-2 pb-2 mb-2 border-b border-black/7">
+              <p className="text-[11px] font-bold text-[#A8A49A] uppercase tracking-wider truncate">{post.title}</p>
+            </div>
+            <div className="space-y-1">
+              <button
+                type="button"
+                onClick={() => { onClose(); onEdit(); }}
+                className="w-full text-left min-h-[44px] px-3.5 py-2 text-sm font-semibold text-[#1C1B18] rounded-xl hover:bg-[#F3F1EB] active:scale-[0.97] transition-transform duration-100 flex items-center gap-2.5"
+              >
+                <svg className="w-4 h-4 text-[#6E6B5F]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                <span>Edit Post</span>
+              </button>
+              {isBumpEligible && (
+                <button
+                  type="button"
+                  onClick={() => { onClose(); onBump(); }}
+                  className="w-full text-left min-h-[44px] px-3.5 py-2 text-sm font-semibold text-[#C96442] rounded-xl hover:bg-[#F2E8E2] active:scale-[0.97] transition-transform duration-100 flex items-center gap-2.5"
+                >
+                  <svg className="w-4 h-4 text-[#C96442]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                  </svg>
+                  <span>Bump Post to Top</span>
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => { onClose(); onDelete(); }}
+                className="w-full text-left min-h-[44px] px-3.5 py-2 text-sm font-semibold text-[#DC2626] rounded-xl hover:bg-red-50 active:scale-[0.97] transition-transform duration-100 flex items-center gap-2.5"
+              >
+                <svg className="w-4 h-4 text-[#DC2626]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+                <span>Delete Post</span>
+              </button>
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              className="w-full text-center min-h-[44px] py-2.5 mt-3 bg-[#F3F1EB] rounded-xl text-xs text-[#6E6B5F] font-bold active:scale-[0.97] transition-transform flex items-center justify-center"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    function ClaimsDrawer({ isOpen, onClose, post, onApproveClaim, onRejectClaim }) {
+      const [touchStartY, setTouchStartY] = useState(0);
+      const [touchCurrentY, setTouchCurrentY] = useState(0);
+      const [isDragging, setIsDragging] = useState(false);
+
+      useEffect(() => {
+        const handleKeyDown = (e) => {
+          if (e.key === 'Escape' && isOpen) onClose();
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+      }, [isOpen, onClose]);
+
+      if (!isOpen || !post) return null;
+
+      const handleTouchStart = (e) => {
+        setTouchStartY(e.touches[0].clientY);
+        setTouchCurrentY(e.touches[0].clientY);
+        setIsDragging(true);
+      };
+
+      const handleTouchMove = (e) => {
+        if (!isDragging) return;
+        const currentY = e.touches[0].clientY;
+        if (currentY > touchStartY) setTouchCurrentY(currentY);
+      };
+
+      const handleTouchEnd = () => {
+        if (!isDragging) return;
+        setIsDragging(false);
+        const dragDelta = touchCurrentY - touchStartY;
+        if (dragDelta > 100) onClose();
+        setTouchStartY(0);
+        setTouchCurrentY(0);
+      };
+
+      const dragOffset = isDragging && touchCurrentY > touchStartY ? touchCurrentY - touchStartY : 0;
+      const claims = post.claim_requests || [];
+
+      const getStatusPill = (status) => {
+        switch (status) {
+          case 'APPROVED':
+            return <span className="inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold tracking-wide text-[#059669] bg-[#ECFDF5]">Approved</span>;
+          case 'REJECTED':
+            return <span className="inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold tracking-wide text-[#6B7280] bg-[#F9FAFB]">Rejected</span>;
+          case 'PENDING':
+          default:
+            return <span className="inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold tracking-wide text-[#D97706] bg-[#FFFBEB]">Pending</span>;
+        }
+      };
+
+      return (
+        <div className="fixed inset-0 z-50 flex items-end justify-center" role="dialog" aria-modal="true">
+          <div className="fixed inset-0 bg-black/40 transition-opacity" onClick={onClose} />
+          <div
+            style={dragOffset ? { transform: `translateY(${dragOffset}px)` } : undefined}
+            className="relative w-full max-w-md bg-white rounded-t-2xl shadow-2xl flex flex-col max-h-[85vh] z-10 transition-transform duration-150"
+          >
+            <div
+              className="pt-3 pb-2 cursor-grab shrink-0"
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+            >
+              <div className="h-1.5 w-12 bg-black/14 rounded-full mx-auto" />
+            </div>
+
+            <div
+              className="px-5 pb-3 border-b border-black/7 flex items-center justify-between gap-3 shrink-0"
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+            >
+              <div className="min-w-0 flex-1">
+                <h2 className="text-base font-bold text-[#1C1B18] truncate">Claims for {post.title}</h2>
+                <p className="text-xs text-[#6E6B5F] mt-0.5">{claims.length} {claims.length === 1 ? 'claim' : 'claims'} submitted</p>
+              </div>
+              <button
+                type="button"
+                onClick={onClose}
+                aria-label="Close claims drawer"
+                className="w-11 h-11 min-w-[44px] min-h-[44px] rounded-lg text-[#A8A49A] hover:text-[#1C1B18] hover:bg-[#F3F1EB] active:scale-[0.97] transition-all flex items-center justify-center shrink-0"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-4 space-y-3 pb-[calc(1rem+env(safe-area-inset-bottom,0px))]">
+              {claims.length === 0 ? (
+                <div className="text-center py-12 text-[#6E6B5F] text-sm">No claims submitted for this post.</div>
+              ) : (
+                claims.map((claim) => (
+                  <div
+                    key={claim.claim_id}
+                    className={`p-3.5 rounded-xl border transition-colors ${
+                      claim.status === 'REJECTED' ? 'bg-[#F3F1EB]/50 border-black/7 opacity-75' : 'bg-white border-black/7'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-2 mb-2">
+                      <span className="text-xs font-bold text-[#6E6B5F]">Student #{claim.claimant_id}</span>
+                      {getStatusPill(claim.status)}
+                    </div>
+                    <p className="text-sm text-[#1C1B18] leading-relaxed mb-3">{claim.proof_note}</p>
+                    {claim.status === 'PENDING' && (
+                      <div className="flex items-center justify-end gap-2 pt-2.5 border-t border-black/7">
+                        <button
+                          type="button"
+                          onClick={() => onRejectClaim(post.post_id, claim.claim_id)}
+                          className="min-h-[44px] px-3.5 py-2 text-sm font-semibold text-[#DC2626] hover:underline active:scale-[0.97] transition-transform duration-100 flex items-center justify-center rounded-lg"
+                        >
+                          Reject
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => onApproveClaim(post.post_id, claim.claim_id)}
+                          className="min-h-[44px] min-w-[80px] px-4 py-2 bg-[#C96442] hover:bg-[#B5572E] text-white text-sm font-semibold rounded-lg active:scale-[0.97] transition-transform duration-100 flex items-center justify-center"
+                        >
+                          Approve
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function PostCard({
+      post,
+      isEditing = false,
+      onStartEdit,
+      onCancelEdit,
+      onStatusChange,
+      onEditSave,
+      onBump,
+      onDeleteClick,
+      onViewClaims,
+      onOpenActionSheet,
+    }) {
+      const [isSavedFlash, setIsSavedFlash] = useState(false);
+      const pendingClaims = (post.claim_requests || []).filter((c) => c.status === 'PENDING');
+      const totalClaims = (post.claim_requests || []).length;
+
+      const now = new Date().getTime();
+      const createdTime = new Date(post.created_at).getTime();
+      const isOlderThan3Days = now - createdTime > 3 * 24 * 60 * 60 * 1000;
+      const isBumpEligible = post.status === 'OPEN' && isOlderThan3Days;
+
+      const handleSave = async (fields) => {
+        await onEditSave(post.post_id, fields);
+        onCancelEdit();
+        setIsSavedFlash(true);
+        setTimeout(() => setIsSavedFlash(false), 200);
+      };
+
+      const isResolved = post.status === 'RESOLVED';
+
+      return (
+        <div
+          className={`bg-white border rounded-xl p-4 shadow-sm transition-all duration-200 ${
+            isSavedFlash ? 'border-[#059669] ring-2 ring-[#059669]/20' : 'border-black/7 hover:border-black/14'
+          }`}
+        >
+          <div className="flex items-start gap-3.5">
+            {post.image_url ? (
+              <img src={post.image_url} alt={post.title} className="w-14 h-14 rounded-lg object-cover shrink-0 border border-black/7" />
+            ) : (
+              <div className="w-14 h-14 rounded-lg bg-[#ECEAE2] flex items-center justify-center shrink-0 border border-black/7">
+                <svg className="w-5 h-5 text-[#A8A49A]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </div>
+            )}
+
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1">
+                <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-bold tracking-wide ${post.type === 'LOST' ? 'text-[#DC2626] bg-[#FEF2F2]' : 'text-[#059669] bg-[#ECFDF5]'}`}>
+                  {post.type}
+                </span>
+                <StatusBadge status={post.status} />
+                <span className="text-[11px] font-medium text-[#A8A49A] ml-auto truncate">{post.category}</span>
+              </div>
+
+              <h3 className="text-sm font-semibold text-[#1C1B18] line-clamp-1 leading-snug">{post.title}</h3>
+              <p className="text-xs text-[#6E6B5F] truncate mt-0.5 flex items-center gap-1">
+                <svg className="w-3 h-3 shrink-0 text-[#A8A49A]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                <span className="truncate">{post.location}</span>
+              </p>
+
+              {pendingClaims.length > 0 && (
+                <p className="text-xs font-semibold text-[#C96442] mt-1 flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#C96442]" />
+                  {pendingClaims.length} Pending Claim{pendingClaims.length > 1 ? 's' : ''}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {isEditing && (
+            <EditForm post={post} onSave={handleSave} onCancel={onCancelEdit} />
+          )}
+
+          {!isEditing && (
+            <div className="mt-3 pt-3 border-t border-black/7 flex items-center justify-between gap-2">
+              <div className="flex-1">
+                {totalClaims > 0 ? (
+                  <button
+                    type="button"
+                    onClick={() => onViewClaims(post)}
+                    className="w-full min-h-[44px] px-3 py-2 bg-[#F2E8E2] text-[#C96442] hover:bg-[#ebdcd3] text-sm font-semibold rounded-lg active:scale-[0.97] transition-transform duration-100 flex items-center justify-center gap-1.5"
+                  >
+                    <span>View Claims</span>
+                    <span className="bg-[#C96442] text-white text-[11px] px-1.5 py-0.5 rounded-full font-bold">{totalClaims}</span>
+                  </button>
+                ) : !isResolved ? (
+                  <button
+                    type="button"
+                    onClick={() => onStatusChange(post.post_id, 'RESOLVED')}
+                    className="w-full min-h-[44px] px-4 py-2 bg-[#C96442] hover:bg-[#B5572E] text-white text-sm font-medium rounded-lg active:scale-[0.97] transition-transform duration-100 flex items-center justify-center"
+                  >
+                    Mark Resolved
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => onStartEdit(post.post_id)}
+                    className="w-full min-h-[44px] px-3 py-2 bg-[#F3F1EB] text-[#1C1B18] text-sm font-medium rounded-lg active:scale-[0.97] transition-transform duration-100 flex items-center justify-center"
+                  >
+                    Edit Details
+                  </button>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => onOpenActionSheet(post)}
+                aria-label="More actions"
+                className="w-11 h-11 min-w-[44px] min-h-[44px] rounded-lg bg-[#F3F1EB] hover:bg-[#ECEAE2] text-[#6E6B5F] hover:text-[#1C1B18] active:scale-[0.97] transition-transform duration-100 flex items-center justify-center shrink-0"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" />
+                </svg>
+              </button>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    function App() {
+      const [posts, setPosts] = useState([]);
+      const [loading, setLoading] = useState(true);
+      const [activeTab, setActiveTab] = useState('active');
+      const [isScrolled, setIsScrolled] = useState(false);
+      const [editingPostId, setEditingPostId] = useState(null);
+
+      const [deletingPost, setDeletingPost] = useState(null);
+      const [claimsDrawerPost, setClaimsDrawerPost] = useState(null);
+      const [actionSheetPost, setActionSheetPost] = useState(null);
+
+      useEffect(() => {
+        const timer = setTimeout(() => {
+          setPosts(INITIAL_POSTS);
+          setLoading(false);
+        }, 300);
+        return () => clearTimeout(timer);
+      }, []);
+
+      useEffect(() => {
+        const handleScroll = () => setIsScrolled(window.scrollY > 0);
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        return () => window.removeEventListener('scroll', handleScroll);
+      }, []);
+
+      useEffect(() => {
+        if (claimsDrawerPost) {
+          const updated = posts.find((p) => p.post_id === claimsDrawerPost.post_id);
+          if (updated) setClaimsDrawerPost(updated);
+        }
+      }, [posts]);
+
+      const patchPostStatus = async (id, status) => {
+        await new Promise((resolve) => setTimeout(resolve, 300));
+        setPosts((prev) =>
+          prev.map((p) => (p.post_id === id ? { ...p, status, updated_at: new Date().toISOString() } : p))
+        );
+      };
+
+      const patchPostEdit = async (id, fields) => {
+        await new Promise((resolve) => setTimeout(resolve, 300));
+        setPosts((prev) =>
+          prev.map((p) => (p.post_id === id ? { ...p, ...fields, updated_at: new Date().toISOString() } : p))
+        );
+      };
+
+      const deletePost = async (id) => {
+        await new Promise((resolve) => setTimeout(resolve, 300));
+        setPosts((prev) => prev.filter((p) => p.post_id !== id));
+      };
+
+      const actionClaim = async (postId, claimId, action) => {
+        await new Promise((resolve) => setTimeout(resolve, 300));
+        setPosts((prev) =>
+          prev.map((p) => {
+            if (p.post_id !== postId) return p;
+            const updatedClaims = (p.claim_requests || []).map((c) => {
+              if (c.claim_id !== claimId) return c;
+              return { ...c, status: action === 'approve' ? 'APPROVED' : 'REJECTED' };
+            });
+            const nextStatus = action === 'approve' ? 'IN_CLAIM' : p.status;
+            return {
+              ...p,
+              status: nextStatus,
+              claim_requests: updatedClaims,
+              updated_at: new Date().toISOString(),
+            };
+          })
+        );
+      };
+
+      const handleBump = async (postId) => {
+        const now = new Date().toISOString();
+        await patchPostEdit(postId, { updated_at: now });
+        setPosts((prev) => {
+          const target = prev.find((p) => p.post_id === postId);
+          if (!target) return prev;
+          const remaining = prev.filter((p) => p.post_id !== postId);
+          return [{ ...target, updated_at: now }, ...remaining];
+        });
+      };
+
+      const handleConfirmDelete = async () => {
+        if (!deletingPost) return;
+        const targetId = deletingPost.post_id;
+        setDeletingPost(null);
+        if (claimsDrawerPost?.post_id === targetId) setClaimsDrawerPost(null);
+        if (editingPostId === targetId) setEditingPostId(null);
+        await deletePost(targetId);
+      };
+
+      const activePosts = posts.filter((p) => p.status === 'OPEN' || p.status === 'IN_CLAIM');
+      const resolvedPosts = posts.filter((p) => p.status === 'RESOLVED');
+      const displayedPosts = activeTab === 'active' ? activePosts : resolvedPosts;
+
+      const checkBumpEligible = (post) => {
+        if (!post || post.status !== 'OPEN') return false;
+        const now = new Date().getTime();
+        const createdTime = new Date(post.created_at).getTime();
+        return now - createdTime > 3 * 24 * 60 * 60 * 1000;
+      };
+
+      return (
+        <div className="bg-[#FAF8F3] min-h-screen text-[#1C1B18] flex justify-center">
+          <div className="w-full max-w-md min-h-screen bg-[#FAF8F3] flex flex-col sm:border-x sm:border-black/7 sm:shadow-xl relative">
+            
+            <header className={`sticky top-0 z-20 bg-[#FAF8F3] px-4 pt-4 pb-3 transition-colors duration-150 ${isScrolled ? 'border-b border-black/7 shadow-sm' : ''}`}>
+              <div className="flex items-center justify-between gap-3 mb-3">
+                <h1 className="text-xl font-bold text-[#1C1B18] tracking-tight">My Posts</h1>
+                <span className="text-xs font-semibold text-[#6E6B5F] bg-[#ECEAE2] px-2.5 py-1 rounded-full">
+                  {posts.length} Total
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-1.5 p-1 bg-[#ECEAE2] rounded-xl">
+                <button
+                  type="button"
+                  onClick={() => { setActiveTab('active'); setEditingPostId(null); }}
+                  className={`min-h-[40px] px-3 py-1.5 rounded-lg text-xs font-bold active:scale-[0.97] transition-all duration-100 flex items-center justify-center gap-1.5 ${
+                    activeTab === 'active' ? 'bg-[#C96442] text-white shadow-sm' : 'bg-transparent text-[#6E6B5F] hover:text-[#1C1B18]'
+                  }`}
+                >
+                  <span>Active</span>
+                  <span className={`text-[11px] px-1.5 py-0.2 rounded-full font-bold ${activeTab === 'active' ? 'bg-white/20 text-white' : 'bg-white text-[#6E6B5F]'}`}>
+                    {activePosts.length}
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => { setActiveTab('resolved'); setEditingPostId(null); }}
+                  className={`min-h-[40px] px-3 py-1.5 rounded-lg text-xs font-bold active:scale-[0.97] transition-all duration-100 flex items-center justify-center gap-1.5 ${
+                    activeTab === 'resolved' ? 'bg-[#C96442] text-white shadow-sm' : 'bg-transparent text-[#6E6B5F] hover:text-[#1C1B18]'
+                  }`}
+                >
+                  <span>Resolved</span>
+                  <span className={`text-[11px] px-1.5 py-0.2 rounded-full font-bold ${activeTab === 'resolved' ? 'bg-white/20 text-white' : 'bg-white text-[#6E6B5F]'}`}>
+                    {resolvedPosts.length}
+                  </span>
+                </button>
+              </div>
+            </header>
+
+            <main className="flex-1 px-4 py-4 space-y-3 pb-[calc(2rem+env(safe-area-inset-bottom,0px))]">
+              {loading ? (
+                <div className="space-y-3">
+                  <SkeletonCard />
+                  <SkeletonCard />
+                  <SkeletonCard />
+                </div>
+              ) : displayedPosts.length === 0 ? (
+                activeTab === 'active' ? (
+                  <div className="text-center py-16 bg-white border border-black/7 rounded-xl p-6 shadow-sm">
+                    <div className="w-12 h-12 rounded-full bg-[#F3F1EB] flex items-center justify-center mx-auto mb-3 text-[#A8A49A]">
+                      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                      </svg>
+                    </div>
+                    <h2 className="text-base font-bold text-[#1C1B18] mb-1">No active posts</h2>
+                    <p className="text-xs text-[#6E6B5F]">You have no items currently open or under verification.</p>
+                  </div>
+                ) : (
+                  <div className="text-center py-16 bg-white border border-black/7 rounded-xl p-6 shadow-sm">
+                    <div className="w-12 h-12 rounded-full bg-[#F3F1EB] flex items-center justify-center mx-auto mb-3 text-[#A8A49A]">
+                      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <p className="text-xs font-semibold text-[#6E6B5F]">Resolved posts will appear here.</p>
+                  </div>
+                )
+              ) : (
+                displayedPosts.map((post) => (
+                  <PostCard
+                    key={post.post_id}
+                    post={post}
+                    isEditing={editingPostId === post.post_id}
+                    onStartEdit={(id) => setEditingPostId(id)}
+                    onCancelEdit={() => setEditingPostId(null)}
+                    onStatusChange={patchPostStatus}
+                    onEditSave={patchPostEdit}
+                    onBump={handleBump}
+                    onDeleteClick={(p) => setDeletingPost(p)}
+                    onViewClaims={(p) => setClaimsDrawerPost(p)}
+                    onOpenActionSheet={(p) => setActionSheetPost(p)}
+                  />
+                ))
+              )}
+            </main>
+
+            <ClaimsDrawer
+              isOpen={Boolean(claimsDrawerPost)}
+              onClose={() => setClaimsDrawerPost(null)}
+              post={claimsDrawerPost}
+              onApproveClaim={(postId, claimId) => actionClaim(postId, claimId, 'approve')}
+              onRejectClaim={(postId, claimId) => actionClaim(postId, claimId, 'reject')}
+            />
+
+            <ActionSheet
+              isOpen={Boolean(actionSheetPost)}
+              onClose={() => setActionSheetPost(null)}
+              post={actionSheetPost}
+              isBumpEligible={checkBumpEligible(actionSheetPost)}
+              onEdit={() => {
+                if (actionSheetPost) setEditingPostId(actionSheetPost.post_id);
+              }}
+              onBump={() => {
+                if (actionSheetPost) handleBump(actionSheetPost.post_id);
+              }}
+              onDelete={() => {
+                if (actionSheetPost) setDeletingPost(actionSheetPost);
+              }}
+            />
+
+            <ConfirmDialog
+              isOpen={Boolean(deletingPost)}
+              onClose={() => setDeletingPost(null)}
+              onConfirm={handleConfirmDelete}
+              title="Delete this post? This can't be undone."
+            />
+          </div>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
