@@ -10,7 +10,7 @@ import { EmptyState } from '@/components/browse/EmptyState';
 import { FeedSkeleton } from '@/components/browse/FeedSkeleton';
 import { MOCK_ITEMS, BrowseItem } from '@/components/browse/mockData';
 import { FloatingActionButton } from '@/components/browse/FloatingActionButton';
-import { ReportBottomSheet } from '@/components/browse/ReportBottomSheet';
+import { PostActionSheet } from '@/components/PostActionSheet';
 import { BottomNav } from '@/components/browse/BottomNav';
 import { CheckCircle2 } from 'lucide-react';
 
@@ -89,13 +89,6 @@ export default function BrowsePage() {
     } else {
       showToast(`Removed claim for "${item.title.slice(0, 24)}..."`);
     }
-  };
-
-  // Navigation stub for Report Lost / Found
-  const handleSelectReportAction = (route: 'lost' | 'found') => {
-    setIsSheetOpen(false);
-    console.log(`[Navigation Stub] Selected report flow: /${route}`);
-    showToast(`Redirecting to /${route} (stub)`);
   };
 
   return (
@@ -184,11 +177,10 @@ export default function BrowsePage() {
       {/* 6. Floating Action Button */}
       <FloatingActionButton onClick={() => setIsSheetOpen(true)} />
 
-      {/* Report Action Bottom Sheet (Navigation Stub) */}
-      <ReportBottomSheet
+      {/* Post Action Sheet */}
+      <PostActionSheet
         isOpen={isSheetOpen}
         onClose={() => setIsSheetOpen(false)}
-        onSelectAction={handleSelectReportAction}
       />
 
       {/* 7. Bottom Tab Navigation */}
