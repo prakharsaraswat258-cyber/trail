@@ -11,11 +11,13 @@ import { FeedSkeleton } from '@/components/browse/FeedSkeleton';
 import { MOCK_ITEMS, BrowseItem } from '@/components/browse/mockData';
 import { BottomNav } from '@/components/browse/BottomNav';
 import { CheckCircle2 } from 'lucide-react';
+import ItemDetailDrawer from '@/components/ItemDetailDrawer';
 
 export default function BrowsePage() {
   const [selectedType, setSelectedType] = useState<FilterType>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [highlightedItemId, setHighlightedItemId] = useState<string | null>(null);
+  const [selectedItemForDetail, setSelectedItemForDetail] = useState<BrowseItem | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -149,12 +151,17 @@ export default function BrowsePage() {
           ) : (
             <div className="flex flex-col gap-4">
               {filteredItems.map((item) => (
-                <ItemCard
+                <div
                   key={item.id}
-                  item={item}
-                  isHighlighted={highlightedItemId === item.id}
-                  onClaimAction={handleClaimAction}
-                />
+                  onClick={() => setSelectedItemForDetail(item)}
+                  className="cursor-pointer rounded-2xl transition-colors hover:bg-[#F3F1EB]"
+                >
+                  <ItemCard
+                    item={item}
+                    isHighlighted={highlightedItemId === item.id}
+                    onClaimAction={handleClaimAction}
+                  />
+                </div>
               ))}
             </div>
           )}
@@ -169,6 +176,15 @@ export default function BrowsePage() {
             <span className="truncate">{toastMessage}</span>
           </div>
         </div>
+      )}
+
+      {/* Item Detail Drawer */}
+      {selectedItemForDetail && (
+        <ItemDetailDrawer
+          isOpen={!!selectedItemForDetail}
+          item={selectedItemForDetail}
+          onClose={() => setSelectedItemForDetail(null)}
+        />
       )}
 
       {/* Bottom Tab Navigation */}
