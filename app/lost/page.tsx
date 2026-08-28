@@ -5,7 +5,7 @@ import QuickSearchBar from '../../components/lost/QuickSearchBar';
 import LostReportWizard from '../../components/lost/LostReportWizard';
 
 export default function LostPage() {
-  const [inWizard, setInWizard] = useState(false);
+  const [inWizard, setInWizard] = useState(true);
 
   return (
     <main className="min-h-screen bg-canvas py-8 px-4 sm:px-6 lg:px-8">
