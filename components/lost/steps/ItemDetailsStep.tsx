@@ -2,8 +2,8 @@
 
 import React from 'react';
 import { ITEM_CATEGORIES } from '../../../lib/constants/itemCategories';
-import BentoCard from '../../ui/BentoCard';
-import Input from '../../ui/Input';
+import { BentoCard } from '../../ui/BentoCard';
+import { Input } from '../../ui/Input';
 
 interface ItemDetailsStepProps {
   formData: {
@@ -12,7 +12,7 @@ interface ItemDetailsStepProps {
   };
   errors: Record<string, string>;
   onChange: (field: string, value: any) => void;
-  headingRef: React.RefObject<HTMLHeadingElement | null>;
+  headingRef: React.RefObject<HTMLHeadingElement>;
 }
 
 export default function ItemDetailsStep({

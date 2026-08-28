@@ -2,8 +2,8 @@
 
 import React, { useState } from 'react';
 import { CAMPUS_BUILDINGS } from '../../../lib/constants/campusBuildings';
-import BentoCard from '../../ui/BentoCard';
-import Input from '../../ui/Input';
+import { BentoCard } from '../../ui/BentoCard';
+import { Input } from '../../ui/Input';
 
 interface DateLocationStepProps {
   formData: {
@@ -16,7 +16,7 @@ interface DateLocationStepProps {
   };
   errors: Record<string, string>;
   onChange: (field: string, value: any) => void;
-  headingRef: React.RefObject<HTMLHeadingElement | null>;
+  headingRef: React.RefObject<HTMLHeadingElement>;
 }
 
 export default function DateLocationStep({
@@ -30,7 +30,8 @@ export default function DateLocationStep({
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const filteredBuildings = CAMPUS_BUILDINGS.filter((b) =>
-    b.toLowerCase().includes(buildingSearch.toLowerCase())
+    b.name.toLowerCase().includes(buildingSearch.toLowerCase()) ||
+    b.code.toLowerCase().includes(buildingSearch.toLowerCase())
   );
 
   return (
@@ -161,8 +162,8 @@ export default function DateLocationStep({
                     Select a campus building…
                   </option>
                   {CAMPUS_BUILDINGS.map((b) => (
-                    <option key={b} value={b}>
-                      {b}
+                    <option key={b.id} value={b.name}>
+                      {b.name}
                     </option>
                   ))}
                 </select>

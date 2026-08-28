@@ -1,5 +1,1 @@
-import { redirect } from 'next/navigation';
-
-export default function HomePage() {
-  redirect('/lost');
-}
+export { default } from './browse/page';

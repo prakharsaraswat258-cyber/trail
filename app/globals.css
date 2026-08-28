@@ -2,25 +2,72 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --font-inter: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+@layer base {
+  :root {
+    --canvas: #FAF8F3;
+    --surface: #FFFFFF;
+    --surface-alt: #F3F1EB;
+    --surface-raised: #ECEAE2;
+    --border: rgba(0, 0, 0, 0.07);
+    --border-strong: rgba(0, 0, 0, 0.14);
+    --text-primary: #1C1B18;
+    --text-secondary: #6E6B5F;
+    --text-muted: #A8A49A;
+    --accent: #C96442;
+    --accent-hover: #B5572E;
+    --accent-light: #F2E8E2;
+    --success: #059669;
+    --error: #DC2626;
+  }
+
+  body {
+    background-color: var(--canvas);
+    color: var(--text-primary);
+    font-family: var(--font-inter), 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Remove spin buttons from number inputs if any */
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
 }
 
-body {
-  background-color: #FAF8F3;
-  color: #1C1B18;
-  font-family: var(--font-inter);
-  min-height: 100vh;
-  margin: 0;
-  padding: 0;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+/* Hide scrollbar for Chrome, Safari and Opera */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+/* Custom opacity pulse for skeleton loading without shimmer gradients */
+@keyframes opacity-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
+.animate-opacity-pulse {
+  animation: opacity-pulse 1.6s ease-in-out infinite;
 }
 
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(-4px);
+    transform: translateY(4px);
   }
   to {
     opacity: 1;
@@ -28,6 +75,7 @@ body {
   }
 }
 
+.animate-fadeIn,
 .animate-fade-in {
   animation: fadeIn 0.2s ease-out forwards;
 }

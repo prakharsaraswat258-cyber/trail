@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import BentoCard from '../ui/BentoCard';
+import { BentoCard } from '../ui/BentoCard';
 import { updateNotificationPreferences } from '../../lib/api/lostItems';
 
 interface NotificationPreferencesProps {

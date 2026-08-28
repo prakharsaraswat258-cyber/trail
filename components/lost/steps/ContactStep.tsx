@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import BentoCard from '../../ui/BentoCard';
-import Input from '../../ui/Input';
+import { BentoCard } from '../../ui/BentoCard';
+import { Input } from '../../ui/Input';
 
 interface ContactStepProps {
   contact: {
@@ -19,7 +19,7 @@ interface ContactStepProps {
   errors: Record<string, string>;
   onContactChange: (field: string, value: string) => void;
   onNotificationChange: (field: string, value: boolean) => void;
-  headingRef: React.RefObject<HTMLHeadingElement | null>;
+  headingRef: React.RefObject<HTMLHeadingElement>;
   isLoggedIn?: boolean;
 }
 

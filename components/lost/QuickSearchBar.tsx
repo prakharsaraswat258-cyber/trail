@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { searchFoundItems, FoundSearchResult } from '../../lib/api/lostItems';
 import SearchResultCard from './SearchResultCard';
-import Button from '../ui/Button';
+import { Button } from '../ui/Button';
 
 interface QuickSearchBarProps {
   onStartReport: () => void;

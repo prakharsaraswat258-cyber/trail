@@ -3,10 +3,10 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import BentoCard from '../../../components/ui/BentoCard';
+import { BentoCard } from '../../../components/ui/BentoCard';
 import StatusTracker from '../../../components/lost/StatusTracker';
 import NotificationPreferences from '../../../components/lost/NotificationPreferences';
-import Button from '../../../components/ui/Button';
+import { Button } from '../../../components/ui/Button';
 import { getTicketStatus, TicketStatusResponse } from '../../../lib/api/lostItems';
 
 export default function TicketTrackingPage() {

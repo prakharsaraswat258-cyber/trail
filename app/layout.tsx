@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
+import { ToastProvider } from '@/components/ui/Toast';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -9,8 +10,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'Report Lost Item | Penga',
-  description: 'Fast, intelligent lost and found recovery network.',
+  title: 'Penga — Unified Lost & Found Feed',
+  description: 'AI-powered community lost and found match engine. Every item found. Every report resolved.',
 };
 
 export default function RootLayout({
@@ -19,9 +20,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={inter.variable}>
-      <body className="bg-canvas text-text-primary antialiased min-h-screen">
-        {children}
+    <html lang="en" className={`${inter.className} ${inter.variable}`}>
+      <body className="min-h-screen bg-canvas text-text-primary antialiased selection:bg-accent-light selection:text-accent">
+        <ToastProvider>{children}</ToastProvider>
       </body>
     </html>
   );

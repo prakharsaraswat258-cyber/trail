@@ -1,13 +1,13 @@
 'use client';
 
 import React from 'react';
-import BentoCard from '../../ui/BentoCard';
+import { BentoCard } from '../../ui/BentoCard';
 import { LostWizardFormData } from '../../../lib/draft/lostWizardDraftStorage';
 
 interface ReviewStepProps {
   formData: LostWizardFormData;
   onJumpToStep: (step: number) => void;
-  headingRef: React.RefObject<HTMLHeadingElement | null>;
+  headingRef: React.RefObject<HTMLHeadingElement>;
 }
 
 export default function ReviewStep({

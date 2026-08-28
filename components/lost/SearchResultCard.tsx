@@ -2,8 +2,8 @@
 
 import React, { useState } from 'react';
 import { FoundSearchResult } from '../../lib/api/lostItems';
-import BentoCard from '../ui/BentoCard';
-import Button from '../ui/Button';
+import { BentoCard } from '../ui/BentoCard';
+import { Button } from '../ui/Button';
 
 interface SearchResultCardProps {
   item: FoundSearchResult;

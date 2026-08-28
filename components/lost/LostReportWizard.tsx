@@ -9,7 +9,7 @@ import DateLocationStep from './steps/DateLocationStep';
 import PhotoStep from './steps/PhotoStep';
 import ContactStep from './steps/ContactStep';
 import ReviewStep from './steps/ReviewStep';
-import Button from '../ui/Button';
+import { Button } from '../ui/Button';
 import {
   saveDraft,
   loadDraft,
@@ -67,7 +67,7 @@ export default function LostReportWizard({ onBackToSearch }: LostReportWizardPro
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
 
   // Heading ref to autofocus on step change
-  const headingRef = useRef<HTMLHeadingElement | null>(null);
+  const headingRef = useRef<HTMLHeadingElement>(null);
 
   // Check for saved draft on mount
   useEffect(() => {
