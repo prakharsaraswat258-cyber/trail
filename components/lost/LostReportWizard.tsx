@@ -352,10 +352,14 @@ export default function LostReportWizard({ onBackToSearch }: LostReportWizardPro
 
       // Route to tracking page
       router.push(`/lost/${res.ticketId}`);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Submission failed', err);
-      setShowNetworkBanner(true);
-      setPendingAction(() => handleSubmitFinalReport);
+      if (typeof navigator !== 'undefined' && !navigator.onLine) {
+        setShowNetworkBanner(true);
+        setPendingAction(() => handleSubmitFinalReport);
+      } else {
+        alert(err?.message || 'Submission failed. Please check your connection and try again.');
+      }
     } finally {
       setIsSubmitting(false);
     }

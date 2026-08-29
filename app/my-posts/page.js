@@ -2,7 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
+import { createClient } from '@/lib/supabase/client';
 import { BottomNav } from '@/components/browse/BottomNav';
 import PostCard from './components/PostCard';
 import SkeletonCard from './components/SkeletonCard';
@@ -142,6 +144,7 @@ const INITIAL_POSTS = [
 ];
 
 export default function MyPostsPage() {
+  const router = useRouter();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('active'); // 'active' | 'resolved'
@@ -153,14 +156,20 @@ export default function MyPostsPage() {
   const [claimsDrawerPost, setClaimsDrawerPost] = useState(null);
   const [actionSheetPost, setActionSheetPost] = useState(null);
 
-  // Initial simulated fetch
+  // Initial auth verification and fetch
   useEffect(() => {
-    const timer = setTimeout(() => {
+    async function checkAuth() {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        router.push('/login?redirect=/my-posts');
+        return;
+      }
       setPosts(INITIAL_POSTS);
       setLoading(false);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, []);
+    }
+    checkAuth();
+  }, [router]);
 
   // Scroll listener for sticky header border
   useEffect(() => {

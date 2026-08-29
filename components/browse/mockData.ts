@@ -1,5 +1,6 @@
 export interface BrowseItem {
   id: string;
+  ticketId?: string;
   title: string;
   category: string;
   zone: string;
@@ -8,6 +9,7 @@ export interface BrowseItem {
   type: 'lost' | 'found';
   matchConfidence: 'strong' | 'possible' | 'weak' | null;
   status: 'active' | 'claimed' | 'resolved';
+  description?: string;
 }
 
 export const MOCK_ITEMS: BrowseItem[] = [

@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 interface LogoProps {
   size?: 'sm' | 'md' | 'lg';
@@ -9,20 +10,34 @@ interface LogoProps {
 }
 
 export function Logo({
+  size = 'md',
   showWordmark = true,
   className = '',
   href = '/',
 }: LogoProps) {
+  const iconSizes = {
+    sm: 'w-6 h-6',
+    md: 'w-8 h-8',
+    lg: 'w-10 h-10',
+  };
+
+  const pixelSizes = {
+    sm: 24,
+    md: 32,
+    lg: 40,
+  };
+
   const content = (
     <div className={`inline-flex items-center gap-2.5 select-none ${className}`}>
-      {/* // TODO: swap fallback for /public/lpu-logo.svg once official asset is added */}
-      <div
-        className="w-8 h-8 rounded-md bg-[#F2E8E2] dark:bg-[#3D2419] flex items-center justify-center flex-shrink-0"
-        aria-hidden="true"
-      >
-        <span className="font-bold text-sm text-[#C96442] dark:text-[#D97757]">
-          LF
-        </span>
+      <div className={`relative ${iconSizes[size]} rounded-md overflow-hidden flex-shrink-0 flex items-center justify-center`}>
+        <Image
+          src="/icons/icon-192.png"
+          alt="LPU Find Logo"
+          width={pixelSizes[size]}
+          height={pixelSizes[size]}
+          className="object-contain w-full h-full"
+          priority
+        />
       </div>
 
       {showWordmark && (

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { ITEM_CATEGORIES } from '@/lib/constants/itemCategories';
 
 /**
  * EditForm component
@@ -10,7 +11,7 @@ export default function EditForm({ post, onSave, onCancel }) {
   const [location, setLocation] = useState(post.location || '');
   const [description, setDescription] = useState(post.description || '');
 
-  const categories = ['Electronics', 'Documents', 'Bags', 'Accessories', 'Other'];
+  const categories = ITEM_CATEGORIES;
 
   const handleSubmit = (e) => {
     e.preventDefault();

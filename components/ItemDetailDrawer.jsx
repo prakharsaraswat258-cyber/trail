@@ -1,7 +1,9 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 import { X, Bookmark, MapPin } from 'lucide-react';
+import { createClient } from '@/lib/supabase/client';
 import ClaimModal from './ClaimModal';
 
 /**
@@ -20,6 +22,8 @@ export default function ItemDetailDrawer({
   onClose,
   onBookmarkToggle,
 }) {
+  const router = useRouter();
+  const pathname = usePathname();
   const [isClaimModalOpen, setIsClaimModalOpen] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [touchStartY, setTouchStartY] = useState(0);
@@ -28,6 +32,17 @@ export default function ItemDetailDrawer({
 
   const drawerRef = useRef(null);
   const triggerElementRef = useRef(null);
+
+  const handleOpenClaimModal = async () => {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      const redirectUrl = pathname || '/browse';
+      router.push(`/login?redirect=${encodeURIComponent(redirectUrl)}`);
+      return;
+    }
+    setIsClaimModalOpen(true);
+  };
 
   // Store trigger element on open for accessible focus restore
   useEffect(() => {
@@ -149,6 +164,7 @@ export default function ItemDetailDrawer({
 
   // Extract non-empty attribute items for the 2-column key/value grid
   const attributes = [];
+  if (item.ticketId) attributes.push({ label: 'Ticket / Ref ID', value: item.ticketId });
   if (item.color) attributes.push({ label: 'Color', value: item.color });
   if (item.brand) attributes.push({ label: 'Brand', value: item.brand });
   if (item.size) attributes.push({ label: 'Size', value: item.size });
@@ -326,7 +342,7 @@ export default function ItemDetailDrawer({
               <div className="pt-1 pb-2">
                 <button
                   type="button"
-                  onClick={() => setIsClaimModalOpen(true)}
+                  onClick={handleOpenClaimModal}
                   className="w-full min-h-[44px] px-6 py-3 rounded-lg bg-[#C96442] hover:bg-[#B5572E] active:bg-[#9E4622] text-[#FFFFFF] text-sm font-semibold transition-colors flex items-center justify-center shadow-none"
                 >
                   Claim This Item

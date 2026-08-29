@@ -18,7 +18,7 @@ export function SearchBar({ searchQuery, onSearchChange, onClearSearch }: Search
           type="text"
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
-          placeholder="Search lost or found items..."
+          placeholder="Search by ticket ID (LST-...), ref (FND-...), or item name..."
           className="w-full h-11 pl-10 pr-10 rounded-xl bg-[#FFFFFF] border border-[rgba(0,0,0,0.07)] text-sm text-[#1C1B18] placeholder-[#A8A49A] focus:outline-none focus:border-[#C96442] focus:ring-1 focus:ring-[#C96442] transition-colors"
         />
         {searchQuery.length > 0 && (

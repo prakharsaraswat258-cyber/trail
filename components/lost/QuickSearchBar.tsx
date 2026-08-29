@@ -145,7 +145,7 @@ export default function QuickSearchBar({ onStartReport }: QuickSearchBarProps) {
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search by item, colour, or type (e.g. MacBook charger white, AirPods, ID card)..."
+            placeholder="Search by Ticket ID (LST-...), Ref code (FND-...), item, colour, or brand..."
             className="w-full min-h-[52px] pl-12 pr-24 py-3.5 text-base text-text-primary placeholder:text-text-muted bg-surface border border-border-strong rounded-xl shadow-sm focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/15 transition-all"
           />
 

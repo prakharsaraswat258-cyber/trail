@@ -166,9 +166,16 @@ export function ItemCard({ item, isHighlighted, onClaimAction }: ItemCardProps) 
       <div className="p-3.5 flex flex-col gap-2">
         {/* Category Pill & Status */}
         <div className="flex items-center justify-between gap-2">
-          <span className="px-2 py-0.5 rounded-md bg-[#F3F1EB] text-[#6E6B5F] text-[11px] font-medium">
-            {item.category}
-          </span>
+          <div className="flex items-center gap-1.5 flex-wrap min-w-0">
+            <span className="px-2 py-0.5 rounded-md bg-[#F3F1EB] text-[#6E6B5F] text-[11px] font-medium">
+              {item.category}
+            </span>
+            {item.ticketId && (
+              <span className="px-1.5 py-0.5 rounded bg-[#ECEAE2] text-[#1C1B18] text-[10px] font-mono font-bold tracking-tight">
+                {item.ticketId}
+              </span>
+            )}
+          </div>
           {getStatusBadge()}
         </div>
 

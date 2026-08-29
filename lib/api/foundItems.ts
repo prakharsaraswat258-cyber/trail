@@ -1,181 +1,221 @@
-import { FoundItemPayload, FoundItemResponse, FoundItemRecord } from "../types/foundItem";
-
-const LOCAL_REPORTS_KEY = "penga:found-reports-db";
+import { createClient } from '../supabase/client';
+import { FoundItemPayload, FoundItemResponse, FoundItemRecord } from '../types/foundItem';
 
 function generateRefCode(): string {
-  const letters = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+  const letters = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
   const num = Math.floor(1000 + Math.random() * 9000);
-  const prefix = Array.from({ length: 3 }, () => letters[Math.floor(Math.random() * letters.length)]).join("");
+  const prefix = Array.from({ length: 3 }, () => letters[Math.floor(Math.random() * letters.length)]).join('');
   return `FND-${prefix}-${num}`;
 }
 
-function getLocalReports(): Record<string, FoundItemRecord> {
-  if (typeof window === "undefined") return {};
-  try {
-    const raw = localStorage.getItem(LOCAL_REPORTS_KEY);
-    return raw ? JSON.parse(raw) : {};
-  } catch {
-    return {};
-  }
-}
-
-function saveLocalReport(report: FoundItemRecord): void {
-  if (typeof window === "undefined") return;
-  try {
-    const db = getLocalReports();
-    db[report.id] = report;
-    localStorage.setItem(LOCAL_REPORTS_KEY, JSON.stringify(db));
-  } catch (e) {
-    console.warn("Failed to store local report:", e);
-  }
+function mapRowToRecord(row: any): FoundItemRecord {
+  return {
+    id: row.id,
+    referenceCode: row.reference_code,
+    itemName: row.item_name,
+    category: row.category,
+    photos: row.photos || [],
+    location: {
+      building: row.location_building,
+      floor: row.location_floor || undefined,
+      landmarkOrRoom: row.location_landmark_or_room || undefined,
+      geoDetected: row.location_geo_detected ?? false,
+    },
+    dateFound: row.date_found,
+    timeFound: row.time_found || undefined,
+    timePeriod: row.time_period || undefined,
+    description: row.description,
+    status: row.status === 'returned' ? 'handed_over' : row.status,
+    currentStatus: row.status,
+    handoffDesk: row.handoff_desk || undefined,
+    hideDetails: row.hide_details ?? false,
+    contactMethod: row.contact_method,
+    contactDetail: row.contact_detail || undefined,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+    returnedAt: row.returned_at || undefined,
+  };
 }
 
 /**
- * Submits a new found item report.
- * Makes HTTP POST to /api/found-items if live, with robust mock fallback.
+ * Submits a new found item report to Supabase table `found_items`.
  */
 export async function submitFoundItem(payload: FoundItemPayload): Promise<FoundItemResponse> {
-  // TODO: replace mock with live API endpoint when backend matching engine is connected
-  try {
-    const res = await fetch("/api/found-items", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    if (res.ok) {
-      const data = await res.json();
-      // Also cache in local DB for offline/client routing
-      if (data.report) {
-        saveLocalReport(data.report);
-      }
-      return data;
-    }
-  } catch {
-    // Network or server mock fallback
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  // If user is authenticated, ensure profile row exists to satisfy foreign key
+  if (user) {
+    try {
+      await supabase.from('profiles').upsert({
+        id: user.id,
+        email: user.email,
+        full_name: user.user_metadata?.full_name || '',
+      });
+    } catch {}
   }
 
-  // Client-side fallback / local simulation
-  await new Promise((r) => setTimeout(r, 600)); // Simulate realistic network latency
-
-  const id = "fnd_" + Date.now().toString(36) + Math.random().toString(36).substring(2, 6);
   const referenceCode = generateRefCode();
-  const createdAt = new Date().toISOString();
 
-  // Simulate smart matching: e.g. electronics or bags found in library/campus center have a simulated instant match
-  const isHighMatchCategory = ["Electronics", "ID/Card", "Keys", "Bag"].includes(payload.category);
-  const immediateMatchFound = isHighMatchCategory && Math.random() > 0.35;
-
-  const record: FoundItemRecord = {
-    ...payload,
-    id,
-    referenceCode,
-    createdAt,
-    currentStatus: payload.status,
+  const insertPayload: any = {
+    reference_code: referenceCode,
+    item_name: payload.itemName,
+    category: payload.category,
+    photos: payload.photos || [],
+    location_building: payload.location.building,
+    location_floor: payload.location.floor || null,
+    location_landmark_or_room: payload.location.landmarkOrRoom || null,
+    location_geo_detected: payload.location.geoDetected ?? false,
+    date_found: payload.dateFound,
+    time_found: payload.timeFound || null,
+    time_period: payload.timePeriod || null,
+    description: payload.description,
+    status: payload.status,
+    handoff_desk: payload.handoffDesk || null,
+    hide_details: payload.hideDetails ?? false,
+    contact_method: payload.contactMethod,
+    contact_detail: payload.contactDetail || null,
   };
 
-  saveLocalReport(record);
+  if (user) {
+    insertPayload.user_id = user.id;
+  }
+
+  const { data, error } = await supabase
+    .from('found_items')
+    .insert(insertPayload)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Supabase submitFoundItem error:', error);
+    throw new Error(error.message);
+  }
+
+  // Check if matches exist for this found item
+  const { data: matchRows } = await supabase
+    .from('matches')
+    .select('id, confidence_score')
+    .eq('found_item_id', data.id)
+    .gte('confidence_score', 50);
+
+  const immediateMatchFound = Boolean(matchRows && matchRows.length > 0);
+  const record = mapRowToRecord(data);
 
   return {
-    id,
-    referenceCode,
-    createdAt,
+    id: data.id,
+    referenceCode: data.reference_code,
+    createdAt: data.created_at,
     immediateMatchFound,
-    matchCount: immediateMatchFound ? 1 : 0,
+    matchCount: matchRows ? matchRows.length : 0,
     report: record,
   };
 }
 
 /**
- * Fetches a single found report by ID
+ * Fetches a single found report by ID or reference code.
  */
 export async function getFoundItem(id: string): Promise<FoundItemRecord | null> {
-  // TODO: replace mock with live API endpoint
-  try {
-    const res = await fetch(`/api/found-items/${encodeURIComponent(id)}`);
-    if (res.ok) {
-      const data = await res.json();
-      return data.report;
-    }
-  } catch {
-    // fallback to local store
+  const supabase = createClient();
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+
+  let query = supabase.from('found_items_public').select('*');
+  if (isUuid) {
+    query = query.or(`id.eq.${id},reference_code.eq.${id}`);
+  } else {
+    query = query.eq('reference_code', id);
   }
 
-  const db = getLocalReports();
-  return db[id] || null;
+  const { data, error } = await query.maybeSingle();
+
+  if (error || !data) {
+    // If not found in public view, try found_items directly
+    let directQuery = supabase.from('found_items').select('*');
+    if (isUuid) {
+      directQuery = directQuery.or(`id.eq.${id},reference_code.eq.${id}`);
+    } else {
+      directQuery = directQuery.eq('reference_code', id);
+    }
+    const { data: directData } = await directQuery.maybeSingle();
+    if (!directData) return null;
+    return mapRowToRecord(directData);
+  }
+
+  return mapRowToRecord(data);
 }
 
 /**
- * Updates a found item report (e.g. edit fields)
+ * Updates a found item report (owner only via RLS).
  */
 export async function updateFoundItem(id: string, updates: Partial<FoundItemPayload>): Promise<FoundItemRecord> {
-  // TODO: replace mock with live API endpoint
-  try {
-    const res = await fetch(`/api/found-items/${encodeURIComponent(id)}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(updates),
-    });
-    if (res.ok) {
-      const data = await res.json();
-      saveLocalReport(data.report);
-      return data.report;
-    }
-  } catch {
-    // fallback
+  const supabase = createClient();
+  const updateData: Record<string, any> = {};
+
+  if (updates.itemName !== undefined) updateData.item_name = updates.itemName;
+  if (updates.category !== undefined) updateData.category = updates.category;
+  if (updates.photos !== undefined) updateData.photos = updates.photos;
+  if (updates.description !== undefined) updateData.description = updates.description;
+  if (updates.status !== undefined) updateData.status = updates.status;
+  if (updates.handoffDesk !== undefined) updateData.handoff_desk = updates.handoffDesk;
+  if (updates.hideDetails !== undefined) updateData.hide_details = updates.hideDetails;
+  if (updates.contactMethod !== undefined) updateData.contact_method = updates.contactMethod;
+  if (updates.contactDetail !== undefined) updateData.contact_detail = updates.contactDetail;
+  if (updates.dateFound !== undefined) updateData.date_found = updates.dateFound;
+  if (updates.timeFound !== undefined) updateData.time_found = updates.timeFound;
+  if (updates.timePeriod !== undefined) updateData.time_period = updates.timePeriod;
+
+  if (updates.location) {
+    if (updates.location.building !== undefined) updateData.location_building = updates.location.building;
+    if (updates.location.floor !== undefined) updateData.location_floor = updates.location.floor;
+    if (updates.location.landmarkOrRoom !== undefined) updateData.location_landmark_or_room = updates.location.landmarkOrRoom;
+    if (updates.location.geoDetected !== undefined) updateData.location_geo_detected = updates.location.geoDetected;
   }
 
-  const db = getLocalReports();
-  const existing = db[id];
-  if (!existing) {
-    throw new Error("Report not found");
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+  let query = supabase.from('found_items').update(updateData);
+  if (isUuid) {
+    query = query.or(`id.eq.${id},reference_code.eq.${id}`);
+  } else {
+    query = query.eq('reference_code', id);
   }
 
-  const updated: FoundItemRecord = {
-    ...existing,
-    ...updates,
-    location: {
-      ...existing.location,
-      ...(updates.location || {}),
-    },
-    updatedAt: new Date().toISOString(),
-  };
+  const { data, error } = await query.select().single();
 
-  saveLocalReport(updated);
-  return updated;
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return mapRowToRecord(data);
 }
 
 /**
- * Marks a found item as returned (closes report)
+ * Marks a found item as returned (closes report).
  */
-export async function markItemAsReturned(id: string): Promise<{ id: string; status: "returned"; returnedAt: string }> {
-  // TODO: replace mock with live API endpoint
-  try {
-    const res = await fetch(`/api/found-items/${encodeURIComponent(id)}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status: "returned" }),
-    });
-    if (res.ok) {
-      const data = await res.json();
-      const db = getLocalReports();
-      if (db[id]) {
-        db[id].currentStatus = "returned";
-        db[id].returnedAt = data.returnedAt;
-        saveLocalReport(db[id]);
-      }
-      return data;
-    }
-  } catch {
-    // fallback
-  }
-
+export async function markItemAsReturned(id: string): Promise<{ id: string; status: 'returned'; returnedAt: string }> {
+  const supabase = createClient();
   const returnedAt = new Date().toISOString();
-  const db = getLocalReports();
-  if (db[id]) {
-    db[id].currentStatus = "returned";
-    db[id].returnedAt = returnedAt;
-    saveLocalReport(db[id]);
+
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+  let query = supabase.from('found_items').update({
+    status: 'returned',
+    returned_at: returnedAt,
+  });
+
+  if (isUuid) {
+    query = query.or(`id.eq.${id},reference_code.eq.${id}`);
+  } else {
+    query = query.eq('reference_code', id);
   }
 
-  return { id, status: "returned", returnedAt };
+  const { data, error } = await query.select('id, status, returned_at').single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return {
+    id: data.id,
+    status: 'returned',
+    returnedAt: data.returned_at || returnedAt,
+  };
 }

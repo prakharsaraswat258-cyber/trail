@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 import { Bell, MapPin } from 'lucide-react';
 
 export function BrowseHeader() {
@@ -6,8 +7,15 @@ export function BrowseHeader() {
     <header className="w-full bg-[#FAF8F3] border-b border-[rgba(0,0,0,0.07)] px-4 py-2.5 pt-[calc(env(safe-area-inset-top,0px)+0.625rem)] flex items-center justify-between sticky top-0 z-20">
       {/* Brand / Logo */}
       <div className="flex items-center gap-2">
-        <div className="w-8 h-8 rounded-lg bg-[#C96442] flex items-center justify-center text-white font-bold text-base">
-          P
+        <div className="w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center flex-shrink-0">
+          <Image
+            src="/icons/icon-192.png"
+            alt="LPU Find Logo"
+            width={32}
+            height={32}
+            className="object-contain w-full h-full"
+            priority
+          />
         </div>
         <span className="text-lg font-bold text-[#1C1B18] tracking-tight">
           LPU Find

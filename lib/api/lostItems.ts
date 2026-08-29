@@ -1,9 +1,11 @@
-import { LostWizardFormData } from '../draft/lostWizardDraftStorage';
+import { createClient } from '../supabase/client';
 
 export interface FoundSearchResult {
   id: string;
   itemName: string;
   category: string;
+  type?: 'lost' | 'found';
+  ticketId?: string;
   itemType?: string;
   color?: string;
   brand?: string;
@@ -64,356 +66,246 @@ export interface TicketStatusResponse {
   updatedAt: string;
 }
 
-// Mock seed found items for quick search with rich attributes (Item Name, Brand, Type, Color, Location)
-const MOCK_FOUND_SEARCH_DATABASE: FoundSearchResult[] = [
-  {
-    id: 'f-mac-1',
-    itemName: 'Apple MacBook Pro 96W USB-C Power Adapter',
-    category: 'Electronics',
-    itemType: 'Laptop Charger',
-    color: 'White',
-    brand: 'Apple',
-    description: 'White Apple 96W USB-C power brick with standard 2m USB-C charging cable.',
-    thumbnailUrl: '',
-    foundLocationSummary: 'Central Library 2nd Floor Study Desk 14',
-    foundDate: '2026-08-28',
-  },
-  {
-    id: 'f-mac-2',
-    itemName: 'Apple MagSafe 3 MacBook Air Charger (Space Gray)',
-    category: 'Electronics',
-    itemType: 'Laptop Charger',
-    color: 'Space Gray',
-    brand: 'Apple',
-    description: 'Braided Space Gray MagSafe 3 charging cable attached to 35W Dual USB-C port adapter.',
-    thumbnailUrl: '',
-    foundLocationSummary: 'Science Complex Room 204 Computer Lab',
-    foundDate: '2026-08-27',
-  },
-  {
-    id: 'f-mac-3',
-    itemName: 'Anker 67W 3-Port USB-C Fast Charger',
-    category: 'Electronics',
-    itemType: 'Laptop Charger',
-    color: 'Black',
-    brand: 'Anker',
-    description: 'Compact black GaN charger suitable for MacBook Air/Pro, with black nylon braided cable.',
-    thumbnailUrl: '',
-    foundLocationSummary: 'Campus Dining Hall near Booth 8',
-    foundDate: '2026-08-27',
-  },
-  {
-    id: 'f-mac-4',
-    itemName: 'Apple MacBook Pro 14" (Space Gray)',
-    category: 'Electronics',
-    itemType: 'Laptop',
-    color: 'Space Gray',
-    brand: 'Apple',
-    description: 'M2 MacBook Pro in matte protective case with programming stickers.',
-    thumbnailUrl: '',
-    foundLocationSummary: 'Engineering & Technology Hall Room 302',
-    foundDate: '2026-08-26',
-  },
-  {
-    id: 'f-1',
-    itemName: 'Apple iPhone 15 Pro (Titanium Blue)',
-    category: 'Electronics',
-    itemType: 'Smartphone',
-    color: 'Titanium Blue',
-    brand: 'Apple',
-    description: 'Blue titanium finish with clear silicone protective bumper case.',
-    thumbnailUrl: '',
-    foundLocationSummary: 'Central Library 2nd Floor Study Room',
-    foundDate: '2026-08-26',
-  },
-  {
-    id: 'f-2',
-    itemName: 'Brown Leather Bifold Wallet',
-    category: 'Wallet',
-    itemType: 'Wallet',
-    color: 'Brown',
-    brand: 'Fossil',
-    description: 'Distressed brown leather bifold wallet with campus card slot.',
-    thumbnailUrl: '',
-    foundLocationSummary: 'Campus Dining Hall near table 14',
-    foundDate: '2026-08-26',
-  },
-  {
-    id: 'f-3',
-    itemName: 'Hydro Flask 32oz Water Bottle (Olive Green)',
-    category: 'Water Bottle',
-    itemType: 'Water Bottle',
-    color: 'Olive Green',
-    brand: 'Hydro Flask',
-    description: 'Olive green powder coated bottle with flex straw cap and national park decal.',
-    thumbnailUrl: '',
-    foundLocationSummary: 'Athletic Center Bleachers',
-    foundDate: '2026-08-25',
-  },
-  {
-    id: 'f-4',
-    itemName: 'AirPods Pro 2 in Matte Black Case',
-    category: 'Electronics',
-    itemType: 'Headphones',
-    color: 'Black',
-    brand: 'Apple',
-    description: 'AirPods Pro 2nd Gen inside a Spigen matte black rugged silicone sleeve.',
-    thumbnailUrl: '',
-    foundLocationSummary: 'Science Complex Room 102',
-    foundDate: '2026-08-27',
-  },
-  {
-    id: 'f-5',
-    itemName: 'Student ID & Key Lanyard (Red Ribbon)',
-    category: 'ID/Card',
-    itemType: 'ID Card / Keys',
-    color: 'Red',
-    brand: 'Campus Union',
-    description: 'Red lanyard with 2 brass keys, bicycle lock key, and plastic ID badge holder.',
-    thumbnailUrl: '',
-    foundLocationSummary: 'Student Union Information Desk',
-    foundDate: '2026-08-27',
-  },
-  {
-    id: 'f-6',
-    itemName: 'Sony WH-1000XM5 Wireless Headphones (Silver/White)',
-    category: 'Electronics',
-    itemType: 'Headphones',
-    color: 'White',
-    brand: 'Sony',
-    description: 'Silver/Off-White noise canceling over-ear headphones in original gray zipper case.',
-    thumbnailUrl: '',
-    foundLocationSummary: 'Arts & Humanities Building Lobby',
-    foundDate: '2026-08-24',
-  },
-  {
-    id: 'f-7',
-    itemName: 'Dell 65W Type-C AC Power Adapter',
-    category: 'Electronics',
-    itemType: 'Laptop Charger',
-    color: 'Black',
-    brand: 'Dell',
-    description: 'Standard black Dell Type-C laptop charger with rubber strap.',
-    thumbnailUrl: '',
-    foundLocationSummary: 'Main Academic Hall Room 110',
-    foundDate: '2026-08-28',
-  },
-  {
-    id: 'f-8',
-    itemName: 'ASUS ROG Gaming Backpack (Black/Red)',
-    category: 'Bag',
-    itemType: 'Backpack',
-    color: 'Black',
-    brand: 'ASUS',
-    description: 'Black backpack with red trim, containing notebook and USB cables.',
-    thumbnailUrl: '',
-    foundLocationSummary: 'Athletic Center Locker Room Hallway',
-    foundDate: '2026-08-25',
-  }
-];
-
-const TICKETS_STORAGE_KEY = 'penga:submitted-tickets';
-
-function getStoredTickets(): Record<string, TicketStatusResponse> {
-  if (typeof window === 'undefined') return {};
-  try {
-    const raw = localStorage.getItem(TICKETS_STORAGE_KEY);
-    return raw ? JSON.parse(raw) : {};
-  } catch {
-    return {};
-  }
-}
-
-function saveStoredTicket(ticket: TicketStatusResponse) {
-  if (typeof window === 'undefined') return;
-  try {
-    const current = getStoredTickets();
-    current[ticket.ticketId] = ticket;
-    localStorage.setItem(TICKETS_STORAGE_KEY, JSON.stringify(current));
-  } catch (err) {
-    console.error('Failed to save ticket in storage', err);
-  }
-}
-
 /**
- * Quick search query against found items with multi-keyword, color, type, and brand filtering
+ * Searches database across both found items and lost reports by ticket ID, reference code, name, category, and description.
  */
 export async function searchFoundItems(
   query: string,
   selectedCategory?: string,
   selectedColor?: string
 ): Promise<{ results: FoundSearchResult[] }> {
-  // Simulate brief network latency
-  await new Promise((resolve) => setTimeout(resolve, 80));
+  const supabase = createClient();
+  const cleanQuery = query.trim();
 
-  const cleanQuery = query.trim().toLowerCase();
-  const tokens = cleanQuery ? cleanQuery.split(/\s+/).filter(Boolean) : [];
+  // 1. Query found_items_public
+  let foundQuery = supabase
+    .from('found_items_public')
+    .select('*')
+    .neq('status', 'returned')
+    .order('created_at', { ascending: false });
 
-  if (tokens.length === 0 && (!selectedCategory || selectedCategory === 'All') && (!selectedColor || selectedColor === 'All')) {
-    return { results: [] };
+  if (selectedCategory && selectedCategory !== 'All') {
+    foundQuery = foundQuery.eq('category', selectedCategory);
   }
 
-  // Filter mock database using multi-token and attribute search
-  const matches = MOCK_FOUND_SEARCH_DATABASE.filter((item) => {
-    // Check Category filter
-    if (
-      selectedCategory &&
-      selectedCategory !== 'All' &&
-      item.category.toLowerCase() !== selectedCategory.toLowerCase() &&
-      item.itemType?.toLowerCase() !== selectedCategory.toLowerCase()
-    ) {
-      return false;
-    }
+  if (cleanQuery) {
+    foundQuery = foundQuery.or(
+      `reference_code.ilike.%${cleanQuery}%,item_name.ilike.%${cleanQuery}%,description.ilike.%${cleanQuery}%,category.ilike.%${cleanQuery}%,location_building.ilike.%${cleanQuery}%`
+    );
+  }
 
-    // Check Color filter
-    if (
-      selectedColor &&
-      selectedColor !== 'All' &&
-      (!item.color || !item.color.toLowerCase().includes(selectedColor.toLowerCase()))
-    ) {
-      return false;
-    }
+  if (selectedColor && selectedColor !== 'All') {
+    foundQuery = foundQuery.or(
+      `item_name.ilike.%${selectedColor}%,description.ilike.%${selectedColor}%`
+    );
+  }
 
-    // If no text query but filters match
-    if (tokens.length === 0) {
-      return true;
-    }
+  // 2. Query lost_reports
+  let lostQuery = supabase
+    .from('lost_reports')
+    .select('*')
+    .neq('status', 'resolved')
+    .order('created_at', { ascending: false });
 
-    // Combine all item attributes into a single searchable string
-    const searchableContent = [
-      item.itemName,
-      item.category,
-      item.itemType || '',
-      item.color || '',
-      item.brand || '',
-      item.description || '',
-      item.foundLocationSummary
-    ].join(' ').toLowerCase();
+  if (selectedCategory && selectedCategory !== 'All') {
+    lostQuery = lostQuery.eq('category', selectedCategory);
+  }
 
-    // Check that every token typed is matched in the item's attributes
-    return tokens.every((token) => searchableContent.includes(token));
-  });
+  if (cleanQuery) {
+    lostQuery = lostQuery.or(
+      `ticket_id.ilike.%${cleanQuery}%,item_name.ilike.%${cleanQuery}%,description.ilike.%${cleanQuery}%,category.ilike.%${cleanQuery}%,location_building.ilike.%${cleanQuery}%`
+    );
+  }
 
-  // Sort by relevance (exact phrase match or title match at top)
-  matches.sort((a, b) => {
-    const aText = `${a.itemName} ${a.color || ''} ${a.itemType || ''}`.toLowerCase();
-    const bText = `${b.itemName} ${b.color || ''} ${b.itemType || ''}`.toLowerCase();
+  const [foundRes, lostRes] = await Promise.allSettled([
+    foundQuery.limit(30),
+    lostQuery.limit(30),
+  ]);
 
-    const aExact = cleanQuery && aText.includes(cleanQuery);
-    const bExact = cleanQuery && bText.includes(cleanQuery);
+  const foundData = foundRes.status === 'fulfilled' ? foundRes.value.data || [] : [];
+  const lostData = lostRes.status === 'fulfilled' ? lostRes.value.data || [] : [];
 
-    if (aExact && !bExact) return -1;
-    if (!aExact && bExact) return 1;
-    return 0;
-  });
+  const foundResults: FoundSearchResult[] = foundData.map((row: any) => ({
+    id: row.id,
+    type: 'found' as const,
+    ticketId: row.reference_code,
+    itemName: row.item_name,
+    category: row.category,
+    description: row.description,
+    thumbnailUrl: Array.isArray(row.photos) && row.photos.length > 0 ? row.photos[0] : '',
+    foundLocationSummary: `${row.location_building}${row.location_floor ? `, ${row.location_floor}` : ''}`,
+    foundDate: row.date_found,
+  }));
 
-  return { results: matches };
+  const lostResults: FoundSearchResult[] = lostData.map((row: any) => ({
+    id: row.id,
+    type: 'lost' as const,
+    ticketId: row.ticket_id,
+    itemName: row.item_name,
+    category: row.category,
+    description: row.description,
+    thumbnailUrl: Array.isArray(row.photos) && row.photos.length > 0 ? row.photos[0] : '',
+    foundLocationSummary: `${row.location_building}${row.location_area ? ` (${row.location_area})` : ''}`,
+    foundDate: row.date_lost,
+  }));
+
+  const combined = [...foundResults, ...lostResults];
+
+  if (cleanQuery) {
+    const qLower = cleanQuery.toLowerCase();
+    combined.sort((a, b) => {
+      const aExact = a.ticketId && a.ticketId.toLowerCase().includes(qLower) ? 1 : 0;
+      const bExact = b.ticketId && b.ticketId.toLowerCase().includes(qLower) ? 1 : 0;
+      return bExact - aExact;
+    });
+  }
+
+  return { results: combined };
 }
 
 /**
- * Submit lost item report
- * TODO: replace mock with live API (POST /api/lost-items)
+ * Submits lost item report to Supabase table `lost_reports`.
  */
 export async function submitLostReport(
   payload: SubmitLostReportPayload
 ): Promise<SubmitLostReportResponse> {
-  // Simulate brief network latency
-  await new Promise((resolve) => setTimeout(resolve, 200));
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (user) {
+    try {
+      await supabase.from('profiles').upsert({
+        id: user.id,
+        email: user.email,
+        full_name: user.user_metadata?.full_name || payload.contact?.fullName || '',
+        phone: payload.contact?.phone || '',
+        student_id: payload.contact?.studentId || '',
+      });
+    } catch {}
+  }
 
   const randomDigits = Math.floor(1000 + Math.random() * 9000);
   const ticketId = `LST-2026-${randomDigits}`;
-  const now = new Date().toISOString();
-  const id = `lost-${Date.now()}`;
 
-  const locationStr = payload.location.area
-    ? `${payload.location.building} (${payload.location.area})`
-    : payload.location.building;
-
-  const ticketData: TicketStatusResponse = {
-    ticketId,
+  const insertPayload: any = {
+    ticket_id: ticketId,
+    category: payload.category,
+    item_name: payload.itemName,
+    description: payload.description,
+    date_lost: payload.dateLost,
+    time_lost: payload.timeLost || null,
+    time_period: payload.timePeriod || null,
+    location_building: payload.location.building,
+    location_area: payload.location.area || null,
+    photos: payload.photos || [],
+    contact_full_name: payload.contact.fullName,
+    contact_phone: payload.contact.phone,
+    contact_email: payload.contact.email,
+    contact_student_id: payload.contact.studentId,
+    notify_email: payload.notificationPreferences.email,
+    notify_sms: payload.notificationPreferences.sms,
+    notify_in_app: payload.notificationPreferences.inApp,
     status: 'submitted',
-    summary: {
-      itemName: payload.itemName,
-      category: payload.category,
-      description: payload.description,
-      location: locationStr,
-      dateLost: payload.dateLost,
-    },
-    contact: payload.contact,
-    notificationPreferences: payload.notificationPreferences,
-    createdAt: now,
-    updatedAt: now,
   };
 
-  saveStoredTicket(ticketData);
-
-  return {
-    id,
-    ticketId,
-    createdAt: now,
-    status: 'submitted',
-    trackingUrl: `/lost/${ticketId}`,
-  };
-}
-
-/**
- * Fetch ticket status for tracking
- * TODO: replace mock with live API (GET /api/lost-items/:ticketId)
- */
-export async function getTicketStatus(ticketId: string): Promise<TicketStatusResponse> {
-  // Simulate brief network latency
-  await new Promise((resolve) => setTimeout(resolve, 100));
-
-  const tickets = getStoredTickets();
-  if (tickets[ticketId]) {
-    return tickets[ticketId];
+  if (user) {
+    insertPayload.user_id = user.id;
   }
 
-  // Fallback demo ticket if loaded directly without prior submission in session
-  const fallbackTicket: TicketStatusResponse = {
-    ticketId,
-    status: 'under_review',
-    summary: {
-      itemName: 'Apple iPhone 15 Pro',
-      category: 'Electronics',
-      description: 'Titanium Blue, clear case with Golden Retriever dog sticker on back.',
-      location: 'Central Library (2nd Floor Study Room)',
-      dateLost: '2026-08-26',
-    },
-    contact: {
-      fullName: 'Alex Mercer',
-      phone: '+1 (555) 234-5678',
-      email: 'alex.mercer@campus.edu',
-      studentId: 'STU-98214',
-    },
-    notificationPreferences: {
-      email: true,
-      sms: true,
-      inApp: true,
-    },
-    createdAt: new Date(Date.now() - 3600000 * 3).toISOString(),
-    updatedAt: new Date(Date.now() - 3600000 * 1).toISOString(),
-  };
+  const { data, error } = await supabase
+    .from('lost_reports')
+    .insert(insertPayload)
+    .select()
+    .single();
 
-  return fallbackTicket;
+  if (error) {
+    console.error('Supabase submitLostReport error:', error);
+    throw new Error(error.message);
+  }
+
+  return {
+    id: data.id,
+    ticketId: data.ticket_id,
+    createdAt: data.created_at,
+    status: 'submitted',
+    trackingUrl: `/lost/${data.ticket_id}`,
+  };
 }
 
 /**
- * Update notification preferences
- * TODO: replace mock with live API (PATCH /api/lost-items/:ticketId/notifications)
+ * Fetches ticket status for tracking from Supabase `lost_reports`.
+ */
+export async function getTicketStatus(ticketId: string): Promise<TicketStatusResponse> {
+  const supabase = createClient();
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(ticketId);
+
+  let query = supabase.from('lost_reports').select('*');
+  if (isUuid) {
+    query = query.or(`id.eq.${ticketId},ticket_id.eq.${ticketId}`);
+  } else {
+    query = query.eq('ticket_id', ticketId);
+  }
+
+  const { data, error } = await query.single();
+  if (error || !data) {
+    throw new Error(error?.message || 'Report not found');
+  }
+
+  const locationStr = data.location_area
+    ? `${data.location_building} (${data.location_area})`
+    : data.location_building;
+
+  return {
+    ticketId: data.ticket_id,
+    status: data.status,
+    summary: {
+      itemName: data.item_name,
+      category: data.category,
+      description: data.description,
+      location: locationStr,
+      dateLost: data.date_lost,
+    },
+    contact: {
+      fullName: data.contact_full_name,
+      phone: data.contact_phone,
+      email: data.contact_email,
+      studentId: data.contact_student_id,
+    },
+    notificationPreferences: {
+      email: data.notify_email,
+      sms: data.notify_sms,
+      inApp: data.notify_in_app,
+    },
+    createdAt: data.created_at,
+    updatedAt: data.updated_at,
+  };
+}
+
+/**
+ * Updates notification preferences on Supabase `lost_reports`.
  */
 export async function updateNotificationPreferences(
   ticketId: string,
   preferences: { email: boolean; sms: boolean; inApp: boolean }
 ): Promise<{ success: boolean; preferences: { email: boolean; sms: boolean; inApp: boolean } }> {
-  // Simulate brief network latency
-  await new Promise((resolve) => setTimeout(resolve, 150));
+  const supabase = createClient();
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(ticketId);
 
-  const tickets = getStoredTickets();
-  if (tickets[ticketId]) {
-    tickets[ticketId].notificationPreferences = preferences;
-    tickets[ticketId].updatedAt = new Date().toISOString();
-    saveStoredTicket(tickets[ticketId]);
+  let query = supabase.from('lost_reports').update({
+    notify_email: preferences.email,
+    notify_sms: preferences.sms,
+    notify_in_app: preferences.inApp,
+  });
+
+  if (isUuid) {
+    query = query.or(`id.eq.${ticketId},ticket_id.eq.${ticketId}`);
+  } else {
+    query = query.eq('ticket_id', ticketId);
+  }
+
+  const { error } = await query;
+  if (error) {
+    throw new Error(error.message);
   }
 
   return { success: true, preferences };

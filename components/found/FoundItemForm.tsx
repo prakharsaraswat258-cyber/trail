@@ -271,9 +271,13 @@ export const FoundItemForm: React.FC<FoundItemFormProps> = ({ onSuccess }) => {
       clearFoundDraft();
       onSuccess(response, payload);
     } catch (err: any) {
-      // Network loss mid-submit
-      enqueueOfflineReport(payload);
-      setOfflineToast(true);
+      console.error('Submit found item error:', err);
+      if (typeof navigator !== 'undefined' && !navigator.onLine) {
+        enqueueOfflineReport(payload);
+        setOfflineToast(true);
+      } else {
+        alert(err?.message || 'Failed to submit report. Please try again.');
+      }
     } finally {
       setIsSubmitting(false);
     }
