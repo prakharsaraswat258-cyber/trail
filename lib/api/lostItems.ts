@@ -184,16 +184,34 @@ export async function submitLostReport(
   const { data: { user } } = await supabase.auth.getUser();
   const isUuid = user?.id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(user.id);
 
+  let validProfileUserId: string | null = null;
   if (user && isUuid) {
     try {
-      await supabase.from('profiles').upsert({
+      const { data: upsertData } = await supabase.from('profiles').upsert({
         id: user.id,
         email: user.email,
         full_name: user.user_metadata?.full_name || payload.contact?.fullName || '',
         phone: payload.contact?.phone || '',
         student_id: payload.contact?.studentId || '',
-      });
+      }).select('id').maybeSingle();
+
+      if (upsertData?.id) {
+        validProfileUserId = upsertData.id;
+      }
     } catch {}
+
+    if (!validProfileUserId) {
+      try {
+        const { data: existing } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('id', user.id)
+          .maybeSingle();
+        if (existing?.id) {
+          validProfileUserId = existing.id;
+        }
+      } catch {}
+    }
   }
 
   const randomDigits = Math.floor(1000 + Math.random() * 9000);
@@ -220,15 +238,27 @@ export async function submitLostReport(
     status: 'submitted',
   };
 
-  if (user && isUuid) {
-    insertPayload.user_id = user.id;
+  if (validProfileUserId) {
+    insertPayload.user_id = validProfileUserId;
   }
 
-  const { data, error } = await supabase
+  let insertResult = await supabase
     .from('lost_reports')
     .insert(insertPayload)
     .select()
     .single();
+
+  // If foreign key constraint failed on user_id, retry without user_id for guest/demo submission
+  if (insertResult.error && insertPayload.user_id && insertResult.error.message.includes('foreign key')) {
+    delete insertPayload.user_id;
+    insertResult = await supabase
+      .from('lost_reports')
+      .insert(insertPayload)
+      .select()
+      .single();
+  }
+
+  const { data, error } = insertResult;
 
   if (error) {
     console.error('Supabase submitLostReport error:', error);

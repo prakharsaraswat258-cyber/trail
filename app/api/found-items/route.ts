@@ -56,11 +56,22 @@ export async function POST(req: NextRequest) {
       insertPayload.user_id = user.id;
     }
 
-    const { data, error } = await supabase
+    let insertResult = await supabase
       .from('found_items')
       .insert(insertPayload)
       .select()
       .single();
+
+    if (insertResult.error && insertPayload.user_id && insertResult.error.message.includes('foreign key')) {
+      delete insertPayload.user_id;
+      insertResult = await supabase
+        .from('found_items')
+        .insert(insertPayload)
+        .select()
+        .single();
+    }
+
+    const { data, error } = insertResult;
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
