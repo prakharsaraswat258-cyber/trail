@@ -12,11 +12,9 @@ function generateRefCode(): string {
 export async function POST(req: NextRequest) {
   try {
     const supabase = await createClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
-    }
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
     const body = (await req.json()) as FoundItemPayload;
 
@@ -29,28 +27,33 @@ export async function POST(req: NextRequest) {
 
     const referenceCode = generateRefCode();
 
+    const insertPayload: any = {
+      reference_code: referenceCode,
+      item_name: body.itemName,
+      category: body.category,
+      photos: body.photos || [],
+      location_building: body.location.building,
+      location_floor: body.location.floor || null,
+      location_landmark_or_room: body.location.landmarkOrRoom || null,
+      location_geo_detected: body.location.geoDetected || false,
+      date_found: body.dateFound,
+      time_found: body.timeFound || null,
+      time_period: body.timePeriod || null,
+      description: body.description,
+      status: body.status,
+      handoff_desk: body.handoffDesk || null,
+      hide_details: body.hideDetails || false,
+      contact_method: body.contactMethod,
+      contact_detail: body.contactDetail || null,
+    };
+
+    if (user) {
+      insertPayload.user_id = user.id;
+    }
+
     const { data, error } = await supabase
       .from('found_items')
-      .insert({
-        reference_code: referenceCode,
-        user_id: user.id,
-        item_name: body.itemName,
-        category: body.category,
-        photos: body.photos || [],
-        location_building: body.location.building,
-        location_floor: body.location.floor || null,
-        location_landmark_or_room: body.location.landmarkOrRoom || null,
-        location_geo_detected: body.location.geoDetected || false,
-        date_found: body.dateFound,
-        time_found: body.timeFound || null,
-        time_period: body.timePeriod || null,
-        description: body.description,
-        status: body.status,
-        handoff_desk: body.handoffDesk || null,
-        hide_details: body.hideDetails || false,
-        contact_method: body.contactMethod,
-        contact_detail: body.contactDetail || null,
-      })
+      .insert(insertPayload)
       .select()
       .single();
 
