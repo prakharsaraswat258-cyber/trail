@@ -34,12 +34,24 @@ export interface SubmitLostReportPayload {
   notificationPreferences: { email: boolean; sms: boolean; inApp: boolean };
 }
 
+export interface MatchSummaryItem {
+  found_item_id: string;
+  confidence_score: number;
+  confidence_label: string;
+  ai_reasoning: string;
+  item_name: string;
+  category: string;
+  date_found?: string;
+  location_found?: string;
+}
+
 export interface SubmitLostReportResponse {
   id: string;
   ticketId: string;
   createdAt: string;
   status: 'submitted';
   trackingUrl: string;
+  matches?: MatchSummaryItem[];
 }
 
 export interface TicketStatusResponse {
@@ -265,15 +277,26 @@ export async function submitLostReport(
     throw new Error(error.message);
   }
 
-  // Trigger background matching calculation without blocking user response
+  // Await AI matching engine computation
+  let matches: MatchSummaryItem[] = [];
   if (typeof window !== 'undefined' && data?.id) {
-    fetch('/api/lost-reports/match', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ lostReportId: data.id }),
-    }).catch((matchErr) => {
-      console.warn('Failed to trigger background match computation for lost report:', matchErr);
-    });
+    try {
+      const matchRes = await fetch('/api/lost-reports/match', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lost_item_id: data.id }),
+      });
+      if (matchRes.ok) {
+        const matchData = await matchRes.json();
+        if (Array.isArray(matchData?.matches)) {
+          matches = matchData.matches;
+        }
+      } else {
+        console.warn('Match computation returned non-OK status:', matchRes.status);
+      }
+    } catch (matchErr) {
+      console.warn('Failed to compute matches for lost report:', matchErr);
+    }
   }
 
   return {
@@ -282,6 +305,7 @@ export async function submitLostReport(
     createdAt: data.created_at,
     status: 'submitted',
     trackingUrl: `/lost/${data.ticket_id}`,
+    matches,
   };
 }
 

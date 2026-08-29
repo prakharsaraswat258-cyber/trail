@@ -6,6 +6,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { X, Bookmark, MapPin } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import ClaimModal from './ClaimModal';
+import { MatchBadge } from './ui/MatchBadge';
 
 /**
  * ItemDetailDrawer
@@ -124,42 +125,15 @@ export default function ItemDetailDrawer({
     onBookmarkToggle?.(item, next);
   };
 
-  // Match badge styling
+  // Match badge using canonical MatchBadge component
   const renderMatchBadge = () => {
-    if (!item.matchConfidence) return null;
-
-    const config = {
-      strong: {
-        label: 'Strong Match',
-        bg: 'bg-[#F2E8E2]',
-        text: 'text-[#C96442]',
-        border: 'border-[rgba(201,100,66,0.2)]',
-      },
-      possible: {
-        label: 'Possible Match',
-        bg: 'bg-[#FFFBEB]',
-        text: 'text-[#D97706]',
-        border: 'border-[rgba(217,119,6,0.2)]',
-      },
-      weak: {
-        label: 'Weak Match',
-        bg: 'bg-[#F9FAFB]',
-        text: 'text-[#6B7280]',
-        border: 'border-[rgba(107,114,128,0.2)]',
-      },
-    }[item.matchConfidence] || {
-      label: `${item.matchConfidence} Match`,
-      bg: 'bg-[#F3F1EB]',
-      text: 'text-[#6E6B5F]',
-      border: 'border-[rgba(0,0,0,0.07)]',
-    };
+    if (!item.matchConfidence && typeof item.confidenceScore !== 'number') return null;
 
     return (
-      <span
-        className={`px-2.5 py-1 rounded-full text-xs font-semibold border ${config.bg} ${config.text} ${config.border}`}
-      >
-        {config.label}
-      </span>
+      <MatchBadge
+        confidenceLabel={item.matchConfidence}
+        score={item.confidenceScore}
+      />
     );
   };
 
