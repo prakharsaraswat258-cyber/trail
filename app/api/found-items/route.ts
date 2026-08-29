@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { FoundItemPayload } from '@/lib/types/foundItem';
+import { computeAndSaveMatchesForFoundItem } from '@/lib/matching/computeMatches';
 
 function generateRefCode(): string {
   const letters = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
@@ -77,13 +78,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    const { data: matchRows } = await supabase
-      .from('matches')
-      .select('id, confidence_score')
-      .eq('found_item_id', data.id)
-      .gte('confidence_score', 50);
+    // Compute similarity matches against active lost reports and save qualifying matches
+    const savedMatches = await computeAndSaveMatchesForFoundItem(data);
+    const qualifyingMatches = savedMatches.filter((m) => m.confidence_score >= 50);
 
-    const immediateMatchFound = Boolean(matchRows && matchRows.length > 0);
+    const immediateMatchFound = qualifyingMatches.length > 0;
+    const matchCount = qualifyingMatches.length;
 
     return NextResponse.json(
       {
@@ -91,7 +91,7 @@ export async function POST(req: NextRequest) {
         referenceCode: data.reference_code,
         createdAt: data.created_at,
         immediateMatchFound,
-        matchCount: matchRows ? matchRows.length : 0,
+        matchCount,
         report: data,
       },
       { status: 201 }
