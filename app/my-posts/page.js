@@ -200,67 +200,235 @@ export default function MyPostsPage() {
   }, [posts]);
 
   // ----------------------------------------------------
-  // Mock API Functions (pure state mutation with 300ms delay)
+  // Live Supabase Mutation Functions (RLS enforced)
   // ----------------------------------------------------
 
   const patchPostStatus = async (id, status) => {
-    await new Promise((resolve) => setTimeout(resolve, 300));
+    const target = posts.find((p) => p.post_id === id);
+    if (!target) return;
+
+    const supabase = createClient();
+    const now = new Date().toISOString();
+
+    if (target.type === 'FOUND') {
+      const dbStatus = status === 'RESOLVED' ? 'returned' : 'with_finder';
+      const updatePayload = { status: dbStatus, updated_at: now };
+      if (status === 'RESOLVED') {
+        updatePayload.returned_at = now;
+      }
+
+      const { data, error } = await supabase
+        .from('found_items')
+        .update(updatePayload)
+        .eq('id', id)
+        .select('id, status, returned_at, updated_at');
+
+      if (error || !data || data.length === 0) {
+        console.error('Failed to update found item status:', error || 'Permission denied');
+        alert('Could not update post status. Please check your permissions.');
+        return;
+      }
+    } else {
+      const dbStatus = status === 'RESOLVED' ? 'resolved' : 'submitted';
+      const updatePayload = { status: dbStatus, updated_at: now };
+
+      const { data, error } = await supabase
+        .from('lost_reports')
+        .update(updatePayload)
+        .eq('id', id)
+        .select('id, status, updated_at');
+
+      if (error || !data || data.length === 0) {
+        console.error('Failed to update lost report status:', error || 'Permission denied');
+        alert('Could not update post status. Please check your permissions.');
+        return;
+      }
+    }
+
     setPosts((prev) =>
       prev.map((p) =>
         p.post_id === id
-          ? { ...p, status, updated_at: new Date().toISOString() }
+          ? {
+              ...p,
+              status,
+              updated_at: now,
+            }
           : p
       )
     );
   };
 
   const patchPostEdit = async (id, fields) => {
-    await new Promise((resolve) => setTimeout(resolve, 300));
+    const target = posts.find((p) => p.post_id === id);
+    if (!target) return;
+
+    const supabase = createClient();
+    const now = new Date().toISOString();
+    const updatePayload = { updated_at: now };
+
+    if (fields.title !== undefined) updatePayload.item_name = fields.title;
+    if (fields.category !== undefined) updatePayload.category = fields.category;
+    if (fields.description !== undefined) updatePayload.description = fields.description;
+    if (fields.location !== undefined) updatePayload.location_building = fields.location;
+
+    if (target.type === 'FOUND') {
+      const { data, error } = await supabase
+        .from('found_items')
+        .update(updatePayload)
+        .eq('id', id)
+        .select();
+
+      if (error || !data || data.length === 0) {
+        console.error('Failed to update found item:', error || 'Permission denied');
+        alert('Could not save post changes. Please check permissions.');
+        return;
+      }
+    } else {
+      const { data, error } = await supabase
+        .from('lost_reports')
+        .update(updatePayload)
+        .eq('id', id)
+        .select();
+
+      if (error || !data || data.length === 0) {
+        console.error('Failed to update lost report:', error || 'Permission denied');
+        alert('Could not save post changes. Please check permissions.');
+        return;
+      }
+    }
+
     setPosts((prev) =>
       prev.map((p) =>
         p.post_id === id
-          ? { ...p, ...fields, updated_at: new Date().toISOString() }
+          ? {
+              ...p,
+              ...fields,
+              updated_at: now,
+            }
           : p
       )
     );
   };
 
   const deletePost = async (id) => {
-    await new Promise((resolve) => setTimeout(resolve, 300));
+    const target = posts.find((p) => p.post_id === id);
+    if (!target) return;
+
+    const supabase = createClient();
+
+    if (target.type === 'FOUND') {
+      const { data, error } = await supabase
+        .from('found_items')
+        .delete()
+        .eq('id', id)
+        .select('id');
+
+      if (error || !data || data.length === 0) {
+        console.error('Failed to delete found item:', error || 'Permission denied');
+        alert('Could not delete post. Please check permissions.');
+        return;
+      }
+    } else {
+      const { data, error } = await supabase
+        .from('lost_reports')
+        .delete()
+        .eq('id', id)
+        .select('id');
+
+      if (error || !data || data.length === 0) {
+        console.error('Failed to delete lost report:', error || 'Permission denied');
+        alert('Could not delete post. Please check permissions.');
+        return;
+      }
+    }
+
     setPosts((prev) => prev.filter((p) => p.post_id !== id));
   };
 
   const actionClaim = async (postId, claimId, action) => {
-    await new Promise((resolve) => setTimeout(resolve, 300));
+    const nextClaimStatus = action === 'approve' ? 'APPROVED' : 'REJECTED';
+    const supabase = createClient();
+    const now = new Date().toISOString();
+
+    const { data, error } = await supabase
+      .from('claims')
+      .update({
+        status: nextClaimStatus,
+        updated_at: now,
+      })
+      .eq('id', claimId)
+      .select();
+
+    if (error || !data || data.length === 0) {
+      console.error('Failed to update claim:', error || 'Permission denied');
+      alert('Could not update claim status. Only the owner of the found item can manage claims.');
+      return;
+    }
+
     setPosts((prev) =>
       prev.map((p) => {
         if (p.post_id !== postId) return p;
-        const updatedClaims = (p.claim_requests || []).map((c) => {
-          if (c.claim_id !== claimId) return c;
-          return {
-            ...c,
-            status: action === 'approve' ? 'APPROVED' : 'REJECTED',
-          };
-        });
-        const nextStatus = action === 'approve' ? 'IN_CLAIM' : p.status;
+        const updatedClaims = (p.claim_requests || []).map((c) =>
+          c.claim_id === claimId ? { ...c, status: nextClaimStatus } : c
+        );
+        const hasApprovedClaim = updatedClaims.some((c) => c.status === 'APPROVED');
+        let nextStatus = p.status;
+        if (p.status !== 'RESOLVED') {
+          nextStatus = hasApprovedClaim ? 'IN_CLAIM' : 'OPEN';
+        }
         return {
           ...p,
           status: nextStatus,
           claim_requests: updatedClaims,
-          updated_at: new Date().toISOString(),
+          updated_at: now,
         };
       })
     );
   };
 
   const handleBump = async (postId) => {
+    const target = posts.find((p) => p.post_id === postId);
+    if (!target) return;
+
+    if (!checkBumpEligible(target)) {
+      alert('This post is not eligible to be bumped yet (must be OPEN and older than 3 days).');
+      return;
+    }
+
+    const supabase = createClient();
     const now = new Date().toISOString();
-    await patchPostEdit(postId, { updated_at: now });
+
+    if (target.type === 'FOUND') {
+      const { data, error } = await supabase
+        .from('found_items')
+        .update({ updated_at: now })
+        .eq('id', postId)
+        .select('id, updated_at');
+
+      if (error || !data || data.length === 0) {
+        console.error('Failed to bump found item:', error || 'Permission denied');
+        alert('Could not bump post. Please check permissions.');
+        return;
+      }
+    } else {
+      const { data, error } = await supabase
+        .from('lost_reports')
+        .update({ updated_at: now })
+        .eq('id', postId)
+        .select('id, updated_at');
+
+      if (error || !data || data.length === 0) {
+        console.error('Failed to bump lost report:', error || 'Permission denied');
+        alert('Could not bump post. Please check permissions.');
+        return;
+      }
+    }
+
     setPosts((prev) => {
-      const target = prev.find((p) => p.post_id === postId);
-      if (!target) return prev;
+      const item = prev.find((p) => p.post_id === postId);
+      if (!item) return prev;
       const remaining = prev.filter((p) => p.post_id !== postId);
-      return [{ ...target, updated_at: now }, ...remaining];
+      return [{ ...item, updated_at: now }, ...remaining];
     });
   };
 
