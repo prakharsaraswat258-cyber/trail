@@ -1,4 +1,4 @@
-﻿-- Migration 0006: Fix seed demo user ID to a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11
+-- Migration 0006: Fix seed demo user ID to a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11
 -- Ensures the standard demo user ID documented across the repo exists in auth.users and public.profiles.
 
 do $$
@@ -77,5 +77,5 @@ begin
     '+91 9876543210'
   )
   on conflict (id) do update
-  set full_name = 'Prakhar Saraswat', email = 'demo@lpu.in';
+  set full_name = 'Prakhar Saraswat', email = 'demo@lpu.in', student_id = '12345678', phone = '+91 9876543210';
 end $$;
