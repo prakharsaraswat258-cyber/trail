@@ -19,6 +19,9 @@ import {
   LostWizardDraft,
 } from '../../lib/draft/lostWizardDraftStorage';
 import { submitLostReport } from '../../lib/api/lostItems';
+import MatchResultsDrawer, { MatchResultItem } from './MatchResultsDrawer';
+import ItemDetailDrawer from '../ItemDetailDrawer';
+import { Sparkles, Loader2 } from 'lucide-react';
 
 const INITIAL_FORM_DATA: LostWizardFormData = {
   category: '',
@@ -56,13 +59,21 @@ export default function LostReportWizard({ onBackToSearch }: LostReportWizardPro
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [liveAnnouncement, setLiveAnnouncement] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submittingStatusText, setSubmittingStatusText] = useState('');
+
+  // Match results state
+  const [matchResults, setMatchResults] = useState<MatchResultItem[]>([]);
+  const [isMatchDrawerOpen, setIsMatchDrawerOpen] = useState(false);
+  const [submittedTicketId, setSubmittedTicketId] = useState<string>('');
+  const [selectedCandidateItem, setSelectedCandidateItem] = useState<any>(null);
+  const [isCandidateDetailOpen, setIsCandidateDetailOpen] = useState(false);
 
   // Draft banner state
   const [existingDraft, setExistingDraft] = useState<LostWizardDraft | null>(null);
   const [showDraftBanner, setShowDraftBanner] = useState(false);
 
   // Network connection state
-  const [, setIsOnline] = useState(true);
+  const [isOnline, setIsOnline] = useState(true);
   const [showNetworkBanner, setShowNetworkBanner] = useState(false);
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
 
@@ -330,6 +341,7 @@ export default function LostReportWizard({ onBackToSearch }: LostReportWizardPro
     }
 
     setIsSubmitting(true);
+    setSubmittingStatusText('AI Match Engine scanning recent campus found records...');
     try {
       const res = await submitLostReport({
         category: formData.category,
@@ -350,8 +362,15 @@ export default function LostReportWizard({ onBackToSearch }: LostReportWizardPro
       // Clear draft on successful submission per spec
       clearDraft();
 
-      // Route to tracking page
-      router.push(`/lost/${res.ticketId}`);
+      // If matches were found, present the Match Results Drawer/Sheet
+      if (res.matches && res.matches.length > 0) {
+        setSubmittedTicketId(res.ticketId);
+        setMatchResults(res.matches);
+        setIsMatchDrawerOpen(true);
+      } else {
+        // Zero matches: proceed directly to normal ticket tracking
+        router.push(`/lost/${res.ticketId}`);
+      }
     } catch (err: any) {
       console.error('Submission failed', err);
       if (typeof navigator !== 'undefined' && !navigator.onLine) {
@@ -362,6 +381,31 @@ export default function LostReportWizard({ onBackToSearch }: LostReportWizardPro
       }
     } finally {
       setIsSubmitting(false);
+      setSubmittingStatusText('');
+    }
+  };
+
+  const handleSelectCandidate = (candidate: MatchResultItem) => {
+    // Map candidate to the ItemDetailDrawer item shape
+    setSelectedCandidateItem({
+      id: candidate.found_item_id,
+      itemName: candidate.item_name,
+      category: candidate.category,
+      description: candidate.ai_reasoning || 'Turned in by campus finder.',
+      type: 'found',
+      dateFound: candidate.date_found,
+      locationSummary: candidate.location_found,
+      matchConfidence: candidate.confidence_label,
+      confidenceScore: candidate.confidence_score,
+      status: 'AVAILABLE',
+    });
+    setIsCandidateDetailOpen(true);
+  };
+
+  const handleProceedToTracking = () => {
+    setIsMatchDrawerOpen(false);
+    if (submittedTicketId) {
+      router.push(`/lost/${submittedTicketId}`);
     }
   };
 
@@ -559,12 +603,51 @@ export default function LostReportWizard({ onBackToSearch }: LostReportWizardPro
             variant="primary"
             onClick={handleNext}
             isLoading={isSubmitting}
-            className="px-8"
+            className="px-8 min-h-[44px]"
           >
-            {currentStep === 6 ? 'Submit Report' : 'Next →'}
+            {currentStep === 6 ? (isSubmitting ? 'Scanning Matches...' : 'Submit Report') : 'Next →'}
           </Button>
         </div>
       </div>
+
+      {/* AI Matching Submitting Loading Overlay */}
+      {isSubmitting && submittingStatusText && (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl p-6 max-w-sm w-full shadow-2xl flex flex-col items-center text-center space-y-4 animate-fade-in border border-black/7">
+            <div className="w-12 h-12 rounded-full bg-[rgba(5,150,105,0.08)] flex items-center justify-center text-[#047857]">
+              <Sparkles className="w-6 h-6 animate-pulse" />
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-base font-bold text-[#1C1B18]">Submitting & Matching</h3>
+              <p className="text-xs text-[#6E6B5F] leading-relaxed">
+                {submittingStatusText}
+              </p>
+            </div>
+            <div className="flex items-center gap-2 text-xs font-semibold text-[#047857]">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span>Analyzing descriptions & location data</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Match Results Drawer / Bottom Sheet */}
+      <MatchResultsDrawer
+        isOpen={isMatchDrawerOpen}
+        matches={matchResults}
+        ticketId={submittedTicketId}
+        onSelectCandidate={handleSelectCandidate}
+        onProceedToTracking={handleProceedToTracking}
+      />
+
+      {/* Existing ItemDetailDrawer for Claiming matched item */}
+      {selectedCandidateItem && (
+        <ItemDetailDrawer
+          isOpen={isCandidateDetailOpen}
+          item={selectedCandidateItem}
+          onClose={() => setIsCandidateDetailOpen(false)}
+        />
+      )}
     </div>
   );
 }

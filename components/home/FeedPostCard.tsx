@@ -23,6 +23,7 @@ import {
   HelpCircle,
 } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast';
+import { MatchBadge } from '@/components/ui/MatchBadge';
 
 interface FeedPostCardProps {
   post: FeedPost;
@@ -73,45 +74,17 @@ export function FeedPostCard({ post }: FeedPostCardProps) {
   const isLost = post.type === 'lost';
   const categoryIcon = CATEGORY_ICON_COMPONENTS[post.category] || <Package className="w-5 h-5" />;
 
-  // 3-tier confidence badge calculation
+  // Confidence badge using canonical MatchBadge component
   const renderConfidenceBadge = () => {
     if (!post.matchStatus || post.matchStatus === 'none' || post.matchConfidence === undefined) {
       return null;
     }
 
-    const score = post.matchConfidence;
-    if (score >= 80) {
-      return (
-        <div
-          className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-success-light text-success text-xs font-semibold tracking-wide border border-success/20"
-          title={`Algorithm match confidence score: ${score}%`}
-        >
-          <span className="w-1.5 h-1.5 rounded-full bg-success inline-block" />
-          <span>{score}% High Match</span>
-        </div>
-      );
-    }
-
-    if (score >= 50) {
-      return (
-        <div
-          className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-[#FFFBEB] text-[#D97706] text-xs font-semibold tracking-wide border border-[#D97706]/20"
-          title={`Algorithm match confidence score: ${score}%`}
-        >
-          <span className="w-1.5 h-1.5 rounded-full bg-[#D97706] inline-block" />
-          <span>{score}% Potential Match</span>
-        </div>
-      );
-    }
-
     return (
-      <div
-        className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-surface-alt text-text-secondary text-xs font-semibold tracking-wide border border-border"
-        title={`Algorithm match confidence score: ${score}%`}
-      >
-        <span className="w-1.5 h-1.5 rounded-full bg-text-muted inline-block" />
-        <span>{score}% Low Match</span>
-      </div>
+      <MatchBadge
+        score={post.matchConfidence}
+        showScore={true}
+      />
     );
   };
 

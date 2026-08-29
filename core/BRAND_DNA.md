@@ -1,4 +1,4 @@
-﻿# 🎓 LPU FIND — BRAND DNA
+# 🎓 LPU FIND — BRAND DNA
 ## Complete visual identity. Apply to ALL UI work without deviation.
 ## Last updated: June 2026
 
@@ -36,6 +36,7 @@ Bento Grid with modular card layout — every metric, list, or control lives in 
 | **Accent-hover** | `#B5572E` | Deep Terracotta | Button hover states |
 | **Accent-light** | `#F2E8E2` | Terracotta Mist | Highlight panels / badge backgrounds |
 | **Success** | `#059669` | Emerald Green | Positive metrics, success states |
+| **Success-light** | `rgba(5,150,105,0.08)` | Emerald Mist | Strong match / positive badge backgrounds |
 | **Error** | `#DC2626` | Crimson Red | Negative metrics, errors, alert states |
 
 ### 🌙 Dark Theme (Dashboard & Admin Panels)
@@ -54,13 +55,16 @@ Bento Grid with modular card layout — every metric, list, or control lives in 
 | **Accent-hover** | `#C96442` | Warm Terracotta | Button hover states |
 | **Accent-light** | `#3D2419` | Dark Terracotta Rust | Highlight panels / badge backgrounds |
 | **Success** | `#059669` | Emerald Green | Positive trends, successful statuses |
+| **Success-light** | `rgba(5,150,105,0.16)` | Dark Emerald Mist | Strong match / positive badge backgrounds |
 | **Error** | `#DC2626` | Crimson Red | Negative trends, alerts, critical statuses |
 
-### Shared Lead Badges (Both Themes)
-<!-- NOTE: Badge naming (Hot/Warm/Cold Lead) may need remapping to Strong/Possible/Weak MatchBadge terminology for LPU Find — confirm before reuse -->
-*   **Hot Lead:** Text `#DC2626` with Background `#FEF2F2` (Crimson on Pale Red)
-*   **Warm Lead:** Text `#D97706` with Background `#FFFBEB` (Amber on Pale Yellow)
-*   **Cold Lead:** Text `#6B7280` with Background `#F9FAFB` (Slate Grey on Off-White)
+### Shared Lead & Match Confidence Badges (Both Themes)
+*   **Strong Match (Score >= 70):** Text `#047857` (Light) / `#34D399` (Dark) with Background `rgba(5,150,105,0.08)` (Light) / `rgba(5,150,105,0.16)` (Dark) and 1px border `rgba(5,150,105,0.2)`. (*Note: Border is an intentional addition for distinct containment against warm parchment canvas*).
+*   **Possible Match (Score 40-69):** Text `#D97706` with Background `#FFFBEB` and 1px border `rgba(217,119,6,0.2)` (Amber on Pale Yellow).
+*   **Weak Match (Score < 40):** Text `#6B7280` with Background `#F9FAFB` and 1px border `rgba(107,114,128,0.2)` (Slate Grey on Off-White).
+*   **Hot Lead (Legacy/Urgency):** Text `#DC2626` with Background `#FEF2F2` (Crimson on Pale Red).
+*   **Warm Lead (Legacy):** Text `#D97706` with Background `#FFFBEB` (Amber on Pale Yellow).
+*   **Cold Lead (Legacy):** Text `#6B7280` with Background `#F9FAFB` (Slate Grey on Off-White).
 
 ---
 
