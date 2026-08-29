@@ -12,9 +12,13 @@ function generateRefCode(): string {
 export async function POST(req: NextRequest) {
   try {
     const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    let user = null;
+    try {
+      const { data } = await supabase.auth.getUser();
+      user = data?.user || null;
+    } catch {
+      user = null;
+    }
 
     const body = (await req.json()) as FoundItemPayload;
 
