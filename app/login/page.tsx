@@ -12,27 +12,44 @@ function LoginForm() {
   const redirectPath = searchParams.get('redirect') || '/my-posts';
 
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
-  const [email, setEmail] = useState('demo@lpu.in');
-  const [password, setPassword] = useState('Password@123');
-  const [fullName, setFullName] = useState('Prakhar Saraswat');
+  const [studentId, setStudentId] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [demoLoading, setDemoLoading] = useState(false);
 
   const supabase = createClient();
 
-  const handleDirectDemoLogin = () => {
-    const demoUser = {
-      id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
-      email: email.trim() || 'demo@lpu.in',
-      user_metadata: {
-        full_name: fullName.trim() || 'Prakhar Saraswat',
-        student_id: '12345678',
-      },
-    };
-    localStorage.setItem('lpu_find_demo_user', JSON.stringify(demoUser));
-    router.push(redirectPath);
-    router.refresh();
+  // Honest Demo / Reviewer login via real Supabase Auth
+  const handleDemoLogin = async () => {
+    setErrorMsg(null);
+    setSuccessMsg(null);
+    setDemoLoading(true);
+
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: 'demo@lpu.in',
+        password: 'Password@123',
+      });
+
+      if (error) {
+        setErrorMsg(
+          error.message ||
+            'Demo login failed. Please ensure the demo user is seeded in Supabase.'
+        );
+        return;
+      }
+
+      router.push(redirectPath);
+      router.refresh();
+    } catch (err: any) {
+      setErrorMsg(err?.message || 'An unexpected error occurred during demo sign-in.');
+    } finally {
+      setDemoLoading(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -41,20 +58,53 @@ function LoginForm() {
     setSuccessMsg(null);
     setLoading(true);
 
-    const targetEmail = email.trim() || 'demo@lpu.in';
-    const targetPassword = password || 'Password@123';
+    const cleanStudentId = studentId.trim();
+    const cleanPassword = password;
 
     try {
       if (mode === 'signup') {
+        const cleanFullName = fullName.trim();
+        const cleanEmail = email.trim().toLowerCase();
+
+        if (!cleanFullName || !cleanStudentId || !cleanEmail || !cleanPassword) {
+          setErrorMsg('All fields are required.');
+          setLoading(false);
+          return;
+        }
+
+        // 1. Check registration number uniqueness via server API route
+        const checkRes = await fetch('/api/auth/lookup-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ studentId: cleanStudentId }),
+        });
+
+        if (checkRes.ok) {
+          // If status is 200, an email was returned, meaning the reg number is already registered
+          setErrorMsg(
+            'This registration number is already registered. Please sign in or reset your password.'
+          );
+          setLoading(false);
+          return;
+        }
+
+        // 2. Call Supabase Auth signUp with metadata
         const { data, error } = await supabase.auth.signUp({
-          email: targetEmail,
-          password: targetPassword,
+          email: cleanEmail,
+          password: cleanPassword,
           options: {
             data: {
-              full_name: fullName.trim() || undefined,
+              full_name: cleanFullName,
+              student_id: cleanStudentId,
+              recovery_email: cleanEmail,
             },
           },
         });
+
+        if (error) {
+          setErrorMsg(error.message);
+          return;
+        }
 
         if (data?.session) {
           router.push(redirectPath);
@@ -62,25 +112,54 @@ function LoginForm() {
           return;
         }
 
-        // If email confirmation is required or rate-limited, provide seamless instant demo login
-        handleDirectDemoLogin();
+        setSuccessMsg(
+          'Account created successfully! Please check your email to verify your account before signing in.'
+        );
       } else {
-        const { data, error } = await supabase.auth.signInWithPassword({
+        // SIGN-IN FLOW
+        if (!cleanStudentId || !cleanPassword) {
+          setErrorMsg('Please enter your registration number and password.');
+          setLoading(false);
+          return;
+        }
+
+        // 1. Look up student's email by registration number
+        const lookupRes = await fetch('/api/auth/lookup-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ studentId: cleanStudentId }),
+        });
+
+        if (!lookupRes.ok) {
+          // Generic error message to prevent registration number enumeration
+          setErrorMsg('Invalid registration number or password.');
+          return;
+        }
+
+        const lookupData = await lookupRes.json();
+        const targetEmail = lookupData?.email;
+
+        if (!targetEmail) {
+          setErrorMsg('Invalid registration number or password.');
+          return;
+        }
+
+        // 2. Sign in with resolved email and password
+        const { error } = await supabase.auth.signInWithPassword({
           email: targetEmail,
-          password: targetPassword,
+          password: cleanPassword,
         });
 
         if (error) {
-          // If Supabase returns 'Email not confirmed' or invalid password, log in with demo session
-          handleDirectDemoLogin();
+          setErrorMsg('Invalid registration number or password.');
           return;
         }
 
         router.push(redirectPath);
         router.refresh();
       }
-    } catch {
-      handleDirectDemoLogin();
+    } catch (err: any) {
+      setErrorMsg(err?.message || 'A network error occurred. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -98,12 +177,12 @@ function LoginForm() {
         </h1>
         <p className="text-xs text-[#6E6B5F]">
           {mode === 'signin'
-            ? 'Access your lost and found reports and manage claims.'
-            : 'Join the campus community to report and track items.'}
+            ? 'Enter your LPU registration number and password to continue.'
+            : 'Join the campus community to report and track lost and found items.'}
         </p>
       </div>
 
-      {/* Quick 1-Click Demo Login Box */}
+      {/* Honest 1-Click Demo Login Box */}
       <div className="mb-5 p-3.5 rounded-lg bg-[#FAF8F3] border border-[#C96442]/25 text-center space-y-2">
         <div className="flex items-center justify-between text-xs font-semibold text-[#1C1B18]">
           <span>⚡ Demo / Reviewer Access</span>
@@ -112,26 +191,27 @@ function LoginForm() {
           </span>
         </div>
         <p className="text-[11px] text-[#6E6B5F] text-left leading-relaxed">
-          Skip manual signup and log in directly as a verified campus student.
+          Skip manual signup and log in with the seeded reviewer account (Reg No: DEMO0001).
         </p>
         <button
           type="button"
-          onClick={handleDirectDemoLogin}
-          className="w-full py-2 px-3 bg-[#1C1B18] hover:bg-[#2A2825] active:scale-[0.99] text-white rounded-md text-xs font-semibold transition-all shadow-sm flex items-center justify-center gap-1.5"
+          disabled={demoLoading || loading}
+          onClick={handleDemoLogin}
+          className="w-full min-h-[44px] py-2 px-3 bg-[#1C1B18] hover:bg-[#2A2825] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-md text-xs font-semibold transition-all shadow-sm flex items-center justify-center gap-1.5"
         >
-          <span>⚡ 1-Click Demo Sign-in</span>
+          <span>{demoLoading ? 'Authenticating...' : '⚡ 1-Click Demo Sign-in'}</span>
         </button>
       </div>
 
       <div className="relative flex py-2 items-center">
         <div className="flex-grow border-t border-[rgba(0,0,0,0.07)]"></div>
         <span className="flex-shrink mx-2 text-[10px] uppercase font-semibold text-[#A8A49A]">
-          or with credentials
+          or with registration number
         </span>
         <div className="flex-grow border-t border-[rgba(0,0,0,0.07)]"></div>
       </div>
 
-      {/* Inline Error Text */}
+      {/* Inline Error Banner */}
       {errorMsg && (
         <div
           role="alert"
@@ -141,7 +221,7 @@ function LoginForm() {
         </div>
       )}
 
-      {/* Success Notification (e.g. email confirmation required) */}
+      {/* Inline Success Banner */}
       {successMsg && (
         <div
           role="status"
@@ -159,7 +239,7 @@ function LoginForm() {
               htmlFor="fullName"
               className="block text-xs font-semibold text-[#1C1B18] mb-1.5"
             >
-              Full Name
+              Full Name <span className="text-[#DC2626]">*</span>
             </label>
             <input
               id="fullName"
@@ -175,30 +255,64 @@ function LoginForm() {
 
         <div>
           <label
-            htmlFor="email"
+            htmlFor="studentId"
             className="block text-xs font-semibold text-[#1C1B18] mb-1.5"
           >
-            Campus Email <span className="text-[#DC2626]">*</span>
+            LPU Registration Number <span className="text-[#DC2626]">*</span>
           </label>
           <input
-            id="email"
-            type="email"
+            id="studentId"
+            type="text"
             required
-            autoComplete="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="student@lpu.in"
+            autoCapitalize="characters"
+            value={studentId}
+            onChange={(e) => setStudentId(e.target.value)}
+            placeholder="e.g. 12100001 or DEMO0001"
             className="w-full min-h-[44px] px-3.5 py-2.5 bg-[#FFFFFF] text-sm text-[#1C1B18] placeholder:text-[#A8A49A] rounded-lg border border-[rgba(0,0,0,0.14)] focus:border-[#C96442] focus:ring-2 focus:ring-[#C96442]/15 outline-none transition-colors"
           />
         </div>
 
+        {mode === 'signup' && (
+          <div>
+            <label
+              htmlFor="email"
+              className="block text-xs font-semibold text-[#1C1B18] mb-1.5"
+            >
+              Personal / Recovery Email <span className="text-[#DC2626]">*</span>
+            </label>
+            <input
+              id="email"
+              type="email"
+              required
+              autoComplete="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="student@gmail.com"
+              className="w-full min-h-[44px] px-3.5 py-2.5 bg-[#FFFFFF] text-sm text-[#1C1B18] placeholder:text-[#A8A49A] rounded-lg border border-[rgba(0,0,0,0.14)] focus:border-[#C96442] focus:ring-2 focus:ring-[#C96442]/15 outline-none transition-colors"
+            />
+            <p className="text-[11px] text-[#6E6B5F] mt-1">
+              Used for account recovery and password reset links.
+            </p>
+          </div>
+        )}
+
         <div>
-          <label
-            htmlFor="password"
-            className="block text-xs font-semibold text-[#1C1B18] mb-1.5"
-          >
-            Password <span className="text-[#DC2626]">*</span>
-          </label>
+          <div className="flex items-center justify-between mb-1.5">
+            <label
+              htmlFor="password"
+              className="block text-xs font-semibold text-[#1C1B18]"
+            >
+              Password <span className="text-[#DC2626]">*</span>
+            </label>
+            {mode === 'signin' && (
+              <Link
+                href="/forgot-password"
+                className="text-xs text-[#C96442] hover:underline font-medium min-h-[44px] inline-flex items-center"
+              >
+                Forgot password?
+              </Link>
+            )}
+          </div>
           <input
             id="password"
             type="password"
@@ -214,7 +328,7 @@ function LoginForm() {
         <div className="pt-2">
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || demoLoading}
             className="w-full min-h-[44px] px-6 py-3 rounded-lg bg-[#C96442] hover:bg-[#B5572E] active:bg-[#9E4622] disabled:opacity-50 disabled:cursor-not-allowed text-[#FFFFFF] text-sm font-semibold transition-colors flex items-center justify-center shadow-none select-none"
           >
             {loading
@@ -264,7 +378,7 @@ function LoginForm() {
       <div className="mt-4 text-center">
         <Link
           href="/"
-          className="text-xs text-[#A8A49A] hover:text-[#1C1B18] transition-colors"
+          className="text-xs text-[#A8A49A] hover:text-[#1C1B18] transition-colors min-h-[44px] inline-flex items-center justify-center"
         >
           ← Back to browsing items
         </Link>
