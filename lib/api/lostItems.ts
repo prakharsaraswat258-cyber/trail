@@ -182,8 +182,9 @@ export async function submitLostReport(
 ): Promise<SubmitLostReportResponse> {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
+  const isUuid = user?.id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(user.id);
 
-  if (user) {
+  if (user && isUuid) {
     try {
       await supabase.from('profiles').upsert({
         id: user.id,
@@ -219,7 +220,7 @@ export async function submitLostReport(
     status: 'submitted',
   };
 
-  if (user) {
+  if (user && isUuid) {
     insertPayload.user_id = user.id;
   }
 

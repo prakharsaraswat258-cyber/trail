@@ -16,6 +16,11 @@ export function createClient() {
       if (demoUserStr) {
         try {
           const demoUser = JSON.parse(demoUserStr);
+          const isUuid = demoUser.id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(demoUser.id);
+          if (!isUuid) {
+            demoUser.id = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
+            localStorage.setItem('lpu_find_demo_user', JSON.stringify(demoUser));
+          }
           return { data: { user: demoUser }, error: null } as any;
         } catch {}
       }

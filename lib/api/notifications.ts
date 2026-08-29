@@ -42,6 +42,11 @@ export async function fetchNotifications(): Promise<NotificationsResponse> {
     return { notifications: [], unreadCount: 0 };
   }
 
+  const isUuid = user.id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(user.id);
+  if (!isUuid) {
+    return { notifications: [], unreadCount: 0 };
+  }
+
   const { data, error } = await supabase
     .from('notifications')
     .select('*')
@@ -77,6 +82,11 @@ export async function markAllNotificationsRead(): Promise<{ success: boolean }> 
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
+    return { success: true };
+  }
+
+  const isUuid = user.id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(user.id);
+  if (!isUuid) {
     return { success: true };
   }
 

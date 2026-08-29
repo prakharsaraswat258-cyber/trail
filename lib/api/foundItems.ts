@@ -43,9 +43,10 @@ function mapRowToRecord(row: any): FoundItemRecord {
 export async function submitFoundItem(payload: FoundItemPayload): Promise<FoundItemResponse> {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
+  const isUuid = user?.id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(user.id);
 
   // If user is authenticated, ensure profile row exists to satisfy foreign key
-  if (user) {
+  if (user && isUuid) {
     try {
       await supabase.from('profiles').upsert({
         id: user.id,
@@ -77,7 +78,7 @@ export async function submitFoundItem(payload: FoundItemPayload): Promise<FoundI
     contact_detail: payload.contactDetail || null,
   };
 
-  if (user) {
+  if (user && isUuid) {
     insertPayload.user_id = user.id;
   }
 

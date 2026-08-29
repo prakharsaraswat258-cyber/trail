@@ -51,7 +51,8 @@ export async function POST(req: NextRequest) {
       contact_detail: body.contactDetail || null,
     };
 
-    if (user) {
+    const isUuid = user?.id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(user.id);
+    if (user && isUuid) {
       insertPayload.user_id = user.id;
     }
 
