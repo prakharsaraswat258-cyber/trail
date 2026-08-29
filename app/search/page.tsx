@@ -38,7 +38,7 @@ export default function SearchPage() {
         {/* Search / Wizard Content */}
         <main className="flex-1 px-4 py-4 space-y-4 pb-[calc(5rem+env(safe-area-inset-bottom,0px))]">
           {!inWizard ? (
-            <QuickSearchBar onStartReport={() => setInWizard(true)} />
+            <QuickSearchBar onStartReport={() => setInWizard(true)} simplified={true} />
           ) : (
             <LostReportWizard onBackToSearch={() => setInWizard(false)} />
           )}

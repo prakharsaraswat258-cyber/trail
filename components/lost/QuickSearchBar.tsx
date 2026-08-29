@@ -7,6 +7,7 @@ import { Button } from '../ui/Button';
 
 interface QuickSearchBarProps {
   onStartReport: () => void;
+  simplified?: boolean;
 }
 
 const CATEGORY_CHIPS = [
@@ -41,7 +42,7 @@ const QUICK_SUGGESTIONS = [
   'Hydro Flask olive green',
 ];
 
-export default function QuickSearchBar({ onStartReport }: QuickSearchBarProps) {
+export default function QuickSearchBar({ onStartReport, simplified = false }: QuickSearchBarProps) {
   const [query, setQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedColor, setSelectedColor] = useState('All');
@@ -218,44 +219,48 @@ export default function QuickSearchBar({ onStartReport }: QuickSearchBarProps) {
           </div>
 
           {/* Color Filter Chips */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1.5 scrollbar-none text-xs">
-            <span className="text-text-muted font-medium pr-1 text-[11px] uppercase tracking-wider whitespace-nowrap">
-              Colour:
-            </span>
-            {COLOR_FILTERS.map((col) => {
-              const active = selectedColor === col.value;
-              return (
-                <button
-                  key={col.value}
-                  type="button"
-                  onClick={() => setSelectedColor(col.value)}
-                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium whitespace-nowrap transition-all cursor-pointer ${
-                    active
-                      ? 'bg-text-primary text-surface shadow-sm'
-                      : 'bg-surface border border-border text-text-secondary hover:text-text-primary hover:bg-surface-alt'
-                  }`}
-                >
-                  {col.dot && <span className={`w-2.5 h-2.5 rounded-full inline-block ${col.dot}`} />}
-                  {col.label}
-                </button>
-              );
-            })}
-          </div>
+          {!simplified && (
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1.5 scrollbar-none text-xs">
+              <span className="text-text-muted font-medium pr-1 text-[11px] uppercase tracking-wider whitespace-nowrap">
+                Colour:
+              </span>
+              {COLOR_FILTERS.map((col) => {
+                const active = selectedColor === col.value;
+                return (
+                  <button
+                    key={col.value}
+                    type="button"
+                    onClick={() => setSelectedColor(col.value)}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium whitespace-nowrap transition-all cursor-pointer ${
+                      active
+                        ? 'bg-text-primary text-surface shadow-sm'
+                        : 'bg-surface border border-border text-text-secondary hover:text-text-primary hover:bg-surface-alt'
+                    }`}
+                  >
+                    {col.dot && <span className={`w-2.5 h-2.5 rounded-full inline-block ${col.dot}`} />}
+                    {col.label}
+                  </button>
+                );
+              })}
+            </div>
+          )}
 
           {/* Quick Search Suggestions */}
-          <div className="flex flex-wrap items-center gap-1.5 pt-1 text-xs text-text-secondary">
-            <span className="text-text-muted text-[11px]">Popular searches:</span>
-            {QUICK_SUGGESTIONS.map((item) => (
-              <button
-                key={item}
-                type="button"
-                onClick={() => handleSuggestionClick(item)}
-                className="px-2.5 py-1 rounded-md bg-surface-alt hover:bg-surface-raised border border-border text-text-secondary hover:text-accent transition-colors cursor-pointer text-xs"
-              >
-                {item}
-              </button>
-            ))}
-          </div>
+          {!simplified && (
+            <div className="flex flex-wrap items-center gap-1.5 pt-1 text-xs text-text-secondary">
+              <span className="text-text-muted text-[11px]">Popular searches:</span>
+              {QUICK_SUGGESTIONS.map((item) => (
+                <button
+                  key={item}
+                  type="button"
+                  onClick={() => handleSuggestionClick(item)}
+                  className="px-2.5 py-1 rounded-md bg-surface-alt hover:bg-surface-raised border border-border text-text-secondary hover:text-accent transition-colors cursor-pointer text-xs"
+                >
+                  {item}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Screen Reader Announcement */}

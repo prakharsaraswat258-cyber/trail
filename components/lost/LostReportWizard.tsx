@@ -535,7 +535,7 @@ export default function LostReportWizard({ onBackToSearch }: LostReportWizardPro
                 onClick={onBackToSearch}
                 className="text-text-secondary"
               >
-                ← Quick Search
+                ← Back
               </Button>
             )
           )}
