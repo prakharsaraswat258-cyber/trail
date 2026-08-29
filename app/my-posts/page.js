@@ -269,9 +269,15 @@ export default function MyPostsPage() {
     if (fields.title !== undefined) updatePayload.item_name = fields.title;
     if (fields.category !== undefined) updatePayload.category = fields.category;
     if (fields.description !== undefined) updatePayload.description = fields.description;
-    if (fields.location !== undefined) updatePayload.location_building = fields.location;
 
     if (target.type === 'FOUND') {
+      if (fields.location !== undefined) {
+        const parts = fields.location.split(' · ').map((s) => s.trim()).filter(Boolean);
+        updatePayload.location_building = parts[0] || fields.location;
+        updatePayload.location_floor = parts[1] || null;
+        updatePayload.location_landmark_or_room = parts.slice(2).join(' · ') || null;
+      }
+
       const { data, error } = await supabase
         .from('found_items')
         .update(updatePayload)
@@ -284,6 +290,12 @@ export default function MyPostsPage() {
         return;
       }
     } else {
+      if (fields.location !== undefined) {
+        const parts = fields.location.split(' · ').map((s) => s.trim()).filter(Boolean);
+        updatePayload.location_building = parts[0] || fields.location;
+        updatePayload.location_area = parts.slice(1).join(' · ') || null;
+      }
+
       const { data, error } = await supabase
         .from('lost_reports')
         .update(updatePayload)
