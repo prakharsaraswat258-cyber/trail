@@ -11,7 +11,6 @@ import SkeletonCard from './components/SkeletonCard';
 import ConfirmDialog from './components/ConfirmDialog';
 import ClaimsDrawer from './components/ClaimsDrawer';
 import ActionSheet from './components/ActionSheet';
-import { ITEM_CATEGORIES } from '@/lib/constants/itemCategories';
 
 export default function MyPostsPage() {
   const router = useRouter();
@@ -21,7 +20,6 @@ export default function MyPostsPage() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [editingPostId, setEditingPostId] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterCategory, setFilterCategory] = useState('All');
 
   // Modal / Drawer states
   const [deletingPost, setDeletingPost] = useState(null);
@@ -464,13 +462,6 @@ export default function MyPostsPage() {
   const tabPosts = activeTab === 'active' ? activePosts : resolvedPosts;
 
   const displayedPosts = tabPosts.filter((post) => {
-    if (
-      filterCategory !== 'All' &&
-      post.category.toLowerCase() !== filterCategory.toLowerCase()
-    ) {
-      return false;
-    }
-
     const clean = searchQuery.trim().toLowerCase();
     if (!clean) return true;
 
@@ -495,8 +486,6 @@ export default function MyPostsPage() {
     const createdTime = new Date(post.created_at).getTime();
     return now - createdTime > 3 * 24 * 60 * 60 * 1000;
   };
-
-  const categoriesList = ['All', ...ITEM_CATEGORIES];
 
   return (
     <div className="bg-[#FAF8F3] min-h-screen text-[#1C1B18] flex justify-center">
@@ -563,24 +552,6 @@ export default function MyPostsPage() {
                 </svg>
               </button>
             )}
-          </div>
-
-          {/* Category Quick Chips */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-[11px] scrollbar-none">
-            {categoriesList.map((cat) => (
-              <button
-                key={cat}
-                type="button"
-                onClick={() => setFilterCategory(cat)}
-                className={`px-2.5 py-1 rounded-lg font-medium whitespace-nowrap transition-colors ${
-                  filterCategory === cat
-                    ? 'bg-[#1C1B18] text-white'
-                    : 'bg-[#ECEAE2] text-[#6E6B5F] hover:text-[#1C1B18]'
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
           </div>
 
           {/* Full-width mobile segmented tab switcher */}
