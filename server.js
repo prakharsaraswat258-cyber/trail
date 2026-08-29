@@ -24,6 +24,8 @@ const server = http.createServer((req, res) => {
   // Normalize path
   if (pathname === '/my-posts' || pathname.startsWith('/my-posts/')) {
     pathname = '/my-posts.html';
+  } else if (pathname === '/profile' || pathname.startsWith('/profile/')) {
+    pathname = '/profile.html';
   } else if (pathname === '/' || pathname === '/lost' || pathname.startsWith('/lost/')) {
     pathname = '/index.html';
   }
