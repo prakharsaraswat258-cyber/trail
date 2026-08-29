@@ -13,6 +13,7 @@ import { BottomNav } from '@/components/browse/BottomNav';
 import { CheckCircle2 } from 'lucide-react';
 import ItemDetailDrawer from '@/components/ItemDetailDrawer';
 import { createClient } from '@/lib/supabase/client';
+import { isValidPhotoUrl } from '@/lib/utils/imageCompression';
 
 function formatTimeAgo(isoString: string): string {
   try {
@@ -57,44 +58,48 @@ export default function BrowsePage() {
           .limit(30),
       ]);
 
-      const liveFound: BrowseItem[] = (foundRes.data || []).map((row: any) => ({
-        id: row.id,
-        ticketId: row.reference_code,
-        title: row.item_name,
-        category: row.category,
-        zone: `${row.location_building}${row.location_floor ? ` · ${row.location_floor}` : ''}`,
-        timeAgo: formatTimeAgo(row.created_at),
-        photoUrl:
-          Array.isArray(row.photos) && row.photos.length > 0
-            ? row.photos[0]
-            : 'https://images.unsplash.com/photo-1582139329536-e7284fece509?auto=format&fit=crop&w=600&q=80',
-        type: 'found',
-        matchConfidence: 'strong',
-        status: row.status === 'returned' ? 'resolved' : 'active',
-        description: row.description,
-      }));
+      const liveFound: BrowseItem[] = (foundRes.data || [])
+        .filter((row: any) => {
+          const photo = Array.isArray(row.photos) && row.photos.length > 0 ? row.photos[0] : null;
+          return isValidPhotoUrl(photo);
+        })
+        .map((row: any) => ({
+          id: row.id,
+          ticketId: row.reference_code,
+          title: row.item_name,
+          category: row.category,
+          zone: `${row.location_building}${row.location_floor ? ` · ${row.location_floor}` : ''}`,
+          timeAgo: formatTimeAgo(row.created_at),
+          photoUrl: row.photos[0],
+          type: 'found',
+          matchConfidence: 'strong',
+          status: row.status === 'returned' ? 'resolved' : 'active',
+          description: row.description,
+        }));
 
-      const liveLost: BrowseItem[] = (lostRes.data || []).map((row: any) => ({
-        id: row.id,
-        ticketId: row.ticket_id,
-        title: row.item_name,
-        category: row.category,
-        zone: `${row.location_building}${row.location_area ? ` · ${row.location_area}` : ''}`,
-        timeAgo: formatTimeAgo(row.created_at),
-        photoUrl:
-          Array.isArray(row.photos) && row.photos.length > 0
-            ? row.photos[0]
-            : 'https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?auto=format&fit=crop&w=600&q=80',
-        type: 'lost',
-        matchConfidence: row.status === 'potential_match' ? 'strong' : null,
-        status:
-          row.status === 'resolved'
-            ? 'resolved'
-            : row.status === 'potential_match'
-            ? 'claimed'
-            : 'active',
-        description: row.description,
-      }));
+      const liveLost: BrowseItem[] = (lostRes.data || [])
+        .filter((row: any) => {
+          const photo = Array.isArray(row.photos) && row.photos.length > 0 ? row.photos[0] : null;
+          return isValidPhotoUrl(photo);
+        })
+        .map((row: any) => ({
+          id: row.id,
+          ticketId: row.ticket_id,
+          title: row.item_name,
+          category: row.category,
+          zone: `${row.location_building}${row.location_area ? ` · ${row.location_area}` : ''}`,
+          timeAgo: formatTimeAgo(row.created_at),
+          photoUrl: row.photos[0],
+          type: 'lost',
+          matchConfidence: row.status === 'potential_match' ? 'strong' : null,
+          status:
+            row.status === 'resolved'
+              ? 'resolved'
+              : row.status === 'potential_match'
+              ? 'claimed'
+              : 'active',
+          description: row.description,
+        }));
 
       const combinedLive = [...liveFound, ...liveLost];
 

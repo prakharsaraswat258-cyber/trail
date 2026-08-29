@@ -75,3 +75,18 @@ export async function compressAndStripExif(
     reader.readAsDataURL(file);
   });
 }
+
+/**
+ * Checks whether a photo URL or data URL is valid, non-empty, and renderable.
+ */
+export function isValidPhotoUrl(url?: string | null): boolean {
+  if (!url || typeof url !== 'string') return false;
+  const trimmed = url.trim();
+  if (!trimmed) return false;
+  if (trimmed.startsWith('data:')) {
+    const commaIdx = trimmed.indexOf(',');
+    if (commaIdx === -1) return false;
+    return trimmed.slice(commaIdx + 1).length > 60;
+  }
+  return trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('/');
+}

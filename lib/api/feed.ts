@@ -1,5 +1,6 @@
 import { createClient } from '../supabase/client';
 import { ItemCategory } from '../constants/itemCategories';
+import { isValidPhotoUrl } from '../utils/imageCompression';
 
 export type ReportType = 'lost' | 'found';
 export type MatchStatus = 'none' | 'maybe' | 'matched';
@@ -125,7 +126,12 @@ export async function fetchFeed(params: FeedQueryParams = {}): Promise<FeedRespo
     }
   }
 
-  const posts: FeedPost[] = pageRows.map((row: any) => {
+  const posts: FeedPost[] = pageRows
+    .filter((row: any) => {
+      const photo = Array.isArray(row.photos) && row.photos.length > 0 ? row.photos[0] : null;
+      return isValidPhotoUrl(photo);
+    })
+    .map((row: any) => {
     const score = matchMap[row.id];
     let matchStatus: MatchStatus = 'none';
     if (score !== undefined) {

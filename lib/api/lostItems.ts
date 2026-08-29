@@ -1,4 +1,5 @@
 import { createClient } from '../supabase/client';
+import { isValidPhotoUrl } from '../utils/imageCompression';
 
 export interface FoundSearchResult {
   id: string;
@@ -125,29 +126,39 @@ export async function searchFoundItems(
   const foundData = foundRes.status === 'fulfilled' ? foundRes.value.data || [] : [];
   const lostData = lostRes.status === 'fulfilled' ? lostRes.value.data || [] : [];
 
-  const foundResults: FoundSearchResult[] = foundData.map((row: any) => ({
-    id: row.id,
-    type: 'found' as const,
-    ticketId: row.reference_code,
-    itemName: row.item_name,
-    category: row.category,
-    description: row.description,
-    thumbnailUrl: Array.isArray(row.photos) && row.photos.length > 0 ? row.photos[0] : '',
-    foundLocationSummary: `${row.location_building}${row.location_floor ? `, ${row.location_floor}` : ''}`,
-    foundDate: row.date_found,
-  }));
+  const foundResults: FoundSearchResult[] = foundData
+    .filter((row: any) => {
+      const photo = Array.isArray(row.photos) && row.photos.length > 0 ? row.photos[0] : null;
+      return isValidPhotoUrl(photo);
+    })
+    .map((row: any) => ({
+      id: row.id,
+      type: 'found' as const,
+      ticketId: row.reference_code,
+      itemName: row.item_name,
+      category: row.category,
+      description: row.description,
+      thumbnailUrl: row.photos[0],
+      foundLocationSummary: `${row.location_building}${row.location_floor ? `, ${row.location_floor}` : ''}`,
+      foundDate: row.date_found,
+    }));
 
-  const lostResults: FoundSearchResult[] = lostData.map((row: any) => ({
-    id: row.id,
-    type: 'lost' as const,
-    ticketId: row.ticket_id,
-    itemName: row.item_name,
-    category: row.category,
-    description: row.description,
-    thumbnailUrl: Array.isArray(row.photos) && row.photos.length > 0 ? row.photos[0] : '',
-    foundLocationSummary: `${row.location_building}${row.location_area ? ` (${row.location_area})` : ''}`,
-    foundDate: row.date_lost,
-  }));
+  const lostResults: FoundSearchResult[] = lostData
+    .filter((row: any) => {
+      const photo = Array.isArray(row.photos) && row.photos.length > 0 ? row.photos[0] : null;
+      return isValidPhotoUrl(photo);
+    })
+    .map((row: any) => ({
+      id: row.id,
+      type: 'lost' as const,
+      ticketId: row.ticket_id,
+      itemName: row.item_name,
+      category: row.category,
+      description: row.description,
+      thumbnailUrl: row.photos[0],
+      foundLocationSummary: `${row.location_building}${row.location_area ? ` (${row.location_area})` : ''}`,
+      foundDate: row.date_lost,
+    }));
 
   const combined = [...foundResults, ...lostResults];
 

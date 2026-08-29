@@ -12,6 +12,7 @@ export function ItemCard({ item, isHighlighted, onClaimAction }: ItemCardProps) 
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [isQuickClaimed, setIsQuickClaimed] = useState(false);
   const [showHeartPop, setShowHeartPop] = useState(false);
+  const [imgSrc, setImgSrc] = useState(item.photoUrl);
   const lastTapRef = useRef<number>(0);
 
   const triggerClaimToggle = () => {
@@ -129,10 +130,11 @@ export function ItemCard({ item, isHighlighted, onClaimAction }: ItemCardProps) 
       <div className="relative w-full aspect-square bg-[#F3F1EB] overflow-hidden">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={item.photoUrl}
+          src={imgSrc || item.photoUrl}
           alt={item.title}
           className="w-full h-full object-cover"
           loading="lazy"
+          onError={() => setImgSrc('https://images.unsplash.com/photo-1582139329536-e7284fece509?auto=format&fit=crop&w=600&q=80')}
         />
 
         {/* Double-tap quick visual burst feedback */}
