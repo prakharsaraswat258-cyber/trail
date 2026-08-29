@@ -10,18 +10,6 @@ interface QuickSearchBarProps {
   simplified?: boolean;
 }
 
-const CATEGORY_CHIPS = [
-  { label: 'All Items', value: 'All' },
-  { label: '⚡ Chargers', value: 'Laptop Charger' },
-  { label: '💻 Laptops', value: 'Laptop' },
-  { label: '📱 Phones', value: 'Smartphone' },
-  { label: '🎧 Audio', value: 'Headphones' },
-  { label: '🎒 Bags', value: 'Bag' },
-  { label: '🪪 IDs & Cards', value: 'ID/Card' },
-  { label: '💧 Bottles', value: 'Water Bottle' },
-  { label: '👛 Wallets', value: 'Wallet' },
-];
-
 const COLOR_FILTERS = [
   { label: 'All Colors', value: 'All', dot: '' },
   { label: 'White / Silver', value: 'White', dot: 'bg-slate-100 border border-slate-300' },
@@ -192,34 +180,10 @@ export default function QuickSearchBar({ onStartReport, simplified = false }: Qu
           </div>
         </div>
 
-        {/* Quick Filter Bars: Category / Type & Color */}
-        <div className="space-y-2.5 pt-1">
-          {/* Category / Type Chips */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1.5 scrollbar-none text-xs">
-            <span className="text-text-muted font-medium pr-1 text-[11px] uppercase tracking-wider whitespace-nowrap">
-              Type:
-            </span>
-            {CATEGORY_CHIPS.map((chip) => {
-              const active = selectedCategory === chip.value;
-              return (
-                <button
-                  key={chip.value}
-                  type="button"
-                  onClick={() => setSelectedCategory(chip.value)}
-                  className={`px-3 py-1.5 rounded-lg font-medium whitespace-nowrap transition-all cursor-pointer ${
-                    active
-                      ? 'bg-accent text-white shadow-sm'
-                      : 'bg-surface border border-border text-text-secondary hover:text-text-primary hover:bg-surface-alt'
-                  }`}
-                >
-                  {chip.label}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Color Filter Chips */}
-          {!simplified && (
+        {/* Quick Filter Bars: Color & Suggestions */}
+        {!simplified && (
+          <div className="space-y-2.5 pt-1">
+            {/* Color Filter Chips */}
             <div className="flex items-center gap-1.5 overflow-x-auto pb-1.5 scrollbar-none text-xs">
               <span className="text-text-muted font-medium pr-1 text-[11px] uppercase tracking-wider whitespace-nowrap">
                 Colour:
@@ -243,10 +207,8 @@ export default function QuickSearchBar({ onStartReport, simplified = false }: Qu
                 );
               })}
             </div>
-          )}
 
-          {/* Quick Search Suggestions */}
-          {!simplified && (
+            {/* Quick Search Suggestions */}
             <div className="flex flex-wrap items-center gap-1.5 pt-1 text-xs text-text-secondary">
               <span className="text-text-muted text-[11px]">Popular searches:</span>
               {QUICK_SUGGESTIONS.map((item) => (
@@ -260,8 +222,8 @@ export default function QuickSearchBar({ onStartReport, simplified = false }: Qu
                 </button>
               ))}
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Screen Reader Announcement */}
         <div aria-live="polite" className="sr-only">
