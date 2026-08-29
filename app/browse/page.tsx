@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { BrowseHeader } from '@/components/browse/BrowseHeader';
 import { QuickActionStrip } from '@/components/browse/QuickActionStrip';
-import { SearchBar } from '@/components/browse/SearchBar';
 import { TogglePills, FilterType } from '@/components/browse/TogglePills';
 import { ItemCard } from '@/components/browse/ItemCard';
 import { EmptyState } from '@/components/browse/EmptyState';
@@ -44,7 +43,6 @@ function mapScoreToTier(score?: number | null): 'strong' | 'possible' | 'weak' |
 export default function BrowsePage() {
   const [items, setItems] = useState<BrowseItem[]>(MOCK_ITEMS);
   const [selectedType, setSelectedType] = useState<FilterType>('all');
-  const [searchQuery, setSearchQuery] = useState('');
   const [highlightedItemId, setHighlightedItemId] = useState<string | null>(null);
   const [selectedItemForDetail, setSelectedItemForDetail] = useState<BrowseItem | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -161,36 +159,17 @@ export default function BrowsePage() {
 
   const handleResetFilters = () => {
     setSelectedType('all');
-    setSearchQuery('');
   };
 
-  // Client-side filtering by type, search query (including Ticket ID / Reference Code)
+  // Client-side filtering by type
   const filteredItems = useMemo(() => {
     return items.filter((item) => {
-      // Type filter
       if (selectedType !== 'all' && item.type !== selectedType) {
         return false;
       }
-      // Search filter: matches query against title, ticketId, category, zone, description
-      if (searchQuery.trim() !== '') {
-        const query = searchQuery.toLowerCase().trim();
-        const ticketMatch = item.ticketId
-          ? item.ticketId.toLowerCase().includes(query)
-          : false;
-        const titleMatch = item.title.toLowerCase().includes(query);
-        const categoryMatch = item.category.toLowerCase().includes(query);
-        const zoneMatch = item.zone.toLowerCase().includes(query);
-        const descMatch = item.description
-          ? item.description.toLowerCase().includes(query)
-          : false;
-
-        if (!ticketMatch && !titleMatch && !categoryMatch && !zoneMatch && !descMatch) {
-          return false;
-        }
-      }
       return true;
     });
-  }, [items, selectedType, searchQuery]);
+  }, [items, selectedType]);
 
   const handleSelectUrgentItem = (itemId: string) => {
     const targetItem = items.find((it) => it.id === itemId);
@@ -198,9 +177,6 @@ export default function BrowsePage() {
 
     if (selectedType !== 'all' && targetItem.type !== selectedType) {
       setSelectedType('all');
-    }
-    if (searchQuery.trim() !== '') {
-      setSearchQuery('');
     }
 
     setHighlightedItemId(itemId);
@@ -241,16 +217,7 @@ export default function BrowsePage() {
           />
         </section>
 
-        {/* 3. Search Bar */}
-        <section aria-label="Search" className="pt-1">
-          <SearchBar
-            searchQuery={searchQuery}
-            onSearchChange={setSearchQuery}
-            onClearSearch={() => setSearchQuery('')}
-          />
-        </section>
-
-        {/* 4. Toggle Pills (Segmented Control) */}
+        {/* 3. Toggle Pills (Segmented Control) */}
         <section aria-label="Filter by type" className="pt-1">
           <TogglePills
             selectedType={selectedType}
@@ -282,7 +249,6 @@ export default function BrowsePage() {
           ) : filteredItems.length === 0 ? (
             <EmptyState
               onClearFilters={handleResetFilters}
-              searchQuery={searchQuery}
               selectedType={selectedType}
             />
           ) : (
