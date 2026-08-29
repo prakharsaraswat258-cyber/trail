@@ -23,7 +23,7 @@ function LoginForm() {
 
   const handleDirectDemoLogin = () => {
     const demoUser = {
-      id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+      id: 'c9468c25-6a4b-44e5-8ad9-ee89304cde7d',
       email: email.trim() || 'demo@lpu.in',
       user_metadata: {
         full_name: fullName.trim() || 'Prakhar Saraswat',

@@ -11,137 +11,7 @@ import SkeletonCard from './components/SkeletonCard';
 import ConfirmDialog from './components/ConfirmDialog';
 import ClaimsDrawer from './components/ClaimsDrawer';
 import ActionSheet from './components/ActionSheet';
-
-// Initial seed mock data
-const INITIAL_POSTS = [
-  {
-    post_id: 'post_mac_01',
-    user_id: 'student_auth_id',
-    type: 'LOST',
-    title: 'Apple MacBook Pro 96W Charger (White)',
-    category: 'Electronics',
-    location: 'Central Library, 2nd Floor Study Room 14',
-    description: 'White Apple USB-C power brick with braided charging cable and small initial sticker.',
-    image_url: '',
-    status: 'OPEN',
-    claim_requests: [],
-    created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-    updated_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-  },
-  {
-    post_id: 'post_mac_02',
-    user_id: 'student_auth_id',
-    type: 'FOUND',
-    title: 'MagSafe 3 MacBook Charger (Space Gray)',
-    category: 'Electronics',
-    location: 'Science Complex, Room 204',
-    description: 'Braided Space Gray MagSafe 3 cable with dual USB-C power brick.',
-    image_url: '',
-    status: 'OPEN',
-    claim_requests: [
-      {
-        claim_id: 'clm_101',
-        claimant_id: 'student_552',
-        proof_note: 'Left it by the second monitor at desk 5.',
-        status: 'PENDING',
-      },
-    ],
-    created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-    updated_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-  },
-  {
-    post_id: 'post_7894',
-    user_id: 'student_auth_id',
-    type: 'LOST',
-    title: 'ASUS Laptop Bag (Black/Red)',
-    category: 'Bags',
-    location: 'Block 34, 2nd Floor',
-    description: 'Black backpack with ASUS ROG logo, containing charger and notebook.',
-    image_url: '',
-    status: 'OPEN',
-    claim_requests: [
-      {
-        claim_id: 'clm_102',
-        claimant_id: 'student_123',
-        proof_note: 'Blue carabiner attached to the left shoulder strap.',
-        status: 'PENDING',
-      },
-    ],
-    // 4 days ago to be eligible for Bump (> 3 days)
-    created_at: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
-    updated_at: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
-  },
-  {
-    post_id: 'post_7895',
-    user_id: 'student_auth_id',
-    type: 'LOST',
-    title: 'AirPods Pro Case (2nd Gen - White)',
-    category: 'Electronics',
-    location: 'Library, Silent Study Zone 3',
-    description: 'White case with a small scratch near the lightning port.',
-    image_url: '',
-    status: 'OPEN',
-    claim_requests: [],
-    created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-    updated_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-  },
-  {
-    post_id: 'post_7896',
-    user_id: 'student_auth_id',
-    type: 'FOUND',
-    title: 'Blue Hydro Flask Water Bottle (Olive/Blue)',
-    category: 'Accessories',
-    location: 'Sports Complex, Court 2',
-    description: '32oz wide mouth with stickers from national parks.',
-    image_url: '',
-    status: 'IN_CLAIM',
-    claim_requests: [
-      {
-        claim_id: 'clm_103',
-        claimant_id: 'student_456',
-        proof_note: 'Has a Yosemite sticker and a slight dent at the bottom.',
-        status: 'PENDING',
-      },
-    ],
-    created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-    updated_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-  },
-  {
-    post_id: 'post_7897',
-    user_id: 'student_auth_id',
-    type: 'FOUND',
-    title: 'Student ID Card — John Doe',
-    category: 'Documents',
-    location: 'Cafeteria, Table 12',
-    description: 'Computer Science Department ID card found under chair.',
-    image_url: '',
-    status: 'RESOLVED',
-    claim_requests: [
-      {
-        claim_id: 'clm_104',
-        claimant_id: 'student_789',
-        proof_note: 'Provided matching student registration portal screenshot.',
-        status: 'APPROVED',
-      },
-    ],
-    created_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-    updated_at: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
-  },
-  {
-    post_id: 'post_7898',
-    user_id: 'student_auth_id',
-    type: 'LOST',
-    title: 'Texas Instruments TI-84 Plus Calculator (Black)',
-    category: 'Electronics',
-    location: 'Math Building, Room 104',
-    description: 'Black calculator with initials PD written on the battery cover.',
-    image_url: '',
-    status: 'RESOLVED',
-    claim_requests: [],
-    created_at: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-    updated_at: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString(),
-  },
-];
+import { ITEM_CATEGORIES } from '@/lib/constants/itemCategories';
 
 export default function MyPostsPage() {
   const router = useRouter();
@@ -150,25 +20,164 @@ export default function MyPostsPage() {
   const [activeTab, setActiveTab] = useState('active'); // 'active' | 'resolved'
   const [isScrolled, setIsScrolled] = useState(false);
   const [editingPostId, setEditingPostId] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterCategory, setFilterCategory] = useState('All');
 
   // Modal / Drawer states
   const [deletingPost, setDeletingPost] = useState(null);
   const [claimsDrawerPost, setClaimsDrawerPost] = useState(null);
   const [actionSheetPost, setActionSheetPost] = useState(null);
 
-  // Initial auth verification and fetch
+  // Initial auth verification and real Supabase data fetch
   useEffect(() => {
-    async function checkAuth() {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        router.push('/login?redirect=/my-posts');
-        return;
+    async function loadUserPosts() {
+      setLoading(true);
+      try {
+        const supabase = createClient();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+
+        if (!user) {
+          router.push('/login?redirect=/my-posts');
+          return;
+        }
+
+        const userId = user.id;
+
+        // Fetch user's found items and lost reports in parallel
+        const [foundRes, lostRes] = await Promise.all([
+          supabase
+            .from('found_items')
+            .select('*')
+            .eq('user_id', userId)
+            .order('created_at', { ascending: false }),
+          supabase
+            .from('lost_reports')
+            .select('*')
+            .eq('user_id', userId)
+            .order('created_at', { ascending: false }),
+        ]);
+
+        const foundRows = foundRes.data || [];
+        const lostRows = lostRes.data || [];
+
+        // Fetch claims on the user's found items
+        const claimsByFoundItemId = {};
+        const foundIds = foundRows.map((r) => r.id);
+        if (foundIds.length > 0) {
+          const { data: claimsData } = await supabase
+            .from('claims')
+            .select('*')
+            .in('found_item_id', foundIds)
+            .order('created_at', { ascending: false });
+
+          (claimsData || []).forEach((c) => {
+            if (!claimsByFoundItemId[c.found_item_id]) {
+              claimsByFoundItemId[c.found_item_id] = [];
+            }
+            claimsByFoundItemId[c.found_item_id].push({
+              claim_id: c.id,
+              claimant_id: c.claimant_id,
+              proof_note: c.proof || c.contact || '',
+              status: c.status ? c.status.toUpperCase() : 'PENDING',
+              created_at: c.created_at,
+            });
+          });
+        }
+
+        // Map found_items to Post shape expected by PostCard & ClaimsDrawer
+        const mappedFound = foundRows.map((row) => {
+          const itemClaims = claimsByFoundItemId[row.id] || [];
+          let status = 'OPEN';
+          if (row.status === 'returned') {
+            status = 'RESOLVED';
+          } else if (itemClaims.some((c) => c.status === 'APPROVED')) {
+            status = 'IN_CLAIM';
+          } else {
+            status = 'OPEN';
+          }
+
+          const locParts = [
+            row.location_building,
+            row.location_floor ? row.location_floor : null,
+            row.location_landmark_or_room ? row.location_landmark_or_room : null,
+          ].filter(Boolean);
+
+          const photo =
+            Array.isArray(row.photos) && row.photos.length > 0
+              ? row.photos[0]
+              : '';
+
+          return {
+            post_id: row.id,
+            user_id: row.user_id,
+            type: 'FOUND',
+            title: row.item_name || 'Found Item',
+            category: row.category || 'Other',
+            location: locParts.join(' · ') || 'Campus',
+            description: row.description || '',
+            image_url: photo,
+            status,
+            claim_requests: itemClaims,
+            created_at: row.created_at,
+            updated_at: row.updated_at || row.created_at,
+          };
+        });
+
+        // Map lost_reports to Post shape expected by PostCard & ClaimsDrawer
+        const mappedLost = lostRows.map((row) => {
+          let status = 'OPEN';
+          if (row.status === 'resolved') {
+            status = 'RESOLVED';
+          } else if (row.status === 'potential_match') {
+            status = 'IN_CLAIM';
+          } else {
+            status = 'OPEN';
+          }
+
+          const locParts = [
+            row.location_building,
+            row.location_area ? row.location_area : null,
+          ].filter(Boolean);
+
+          const photo =
+            Array.isArray(row.photos) && row.photos.length > 0
+              ? row.photos[0]
+              : '';
+
+          return {
+            post_id: row.id,
+            user_id: row.user_id,
+            type: 'LOST',
+            title: row.item_name || 'Lost Item',
+            category: row.category || 'Other',
+            location: locParts.join(' · ') || 'Campus',
+            description: row.description || '',
+            image_url: photo,
+            status,
+            claim_requests: [],
+            created_at: row.created_at,
+            updated_at: row.updated_at || row.created_at,
+          };
+        });
+
+        const combined = [...mappedFound, ...mappedLost].sort((a, b) => {
+          const timeA = new Date(a.updated_at || a.created_at).getTime();
+          const timeB = new Date(b.updated_at || b.created_at).getTime();
+          return timeB - timeA;
+        });
+
+        setPosts(combined);
+      } catch (err) {
+        console.error('Failed to load posts from Supabase:', err);
+        setPosts([]);
+      } finally {
+        setLoading(false);
       }
-      setPosts(INITIAL_POSTS);
-      setLoading(false);
     }
-    checkAuth();
+
+    loadUserPosts();
   }, [router]);
 
   // Scroll listener for sticky header border
@@ -268,9 +277,6 @@ export default function MyPostsPage() {
     await deletePost(targetId);
   };
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filterCategory, setFilterCategory] = useState('All');
-
   const activePosts = posts.filter(
     (p) => p.status === 'OPEN' || p.status === 'IN_CLAIM'
   );
@@ -310,7 +316,7 @@ export default function MyPostsPage() {
     return now - createdTime > 3 * 24 * 60 * 60 * 1000;
   };
 
-  const categoriesList = ['All', 'Electronics', 'Bags', 'Accessories', 'Documents'];
+  const categoriesList = ['All', ...ITEM_CATEGORIES];
 
   return (
     <div className="bg-[#FAF8F3] min-h-screen text-[#1C1B18] flex justify-center">
