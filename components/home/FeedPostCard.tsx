@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import { BentoCard } from '@/components/ui/BentoCard';
 import { FeedPost } from '@/lib/api/feed';
 import { CATEGORY_DETAILS } from '@/lib/constants/itemCategories';
@@ -170,13 +171,14 @@ export function FeedPostCard({ post }: FeedPostCardProps) {
         </div>
 
         {/* Thumbnail Photo or Category Icon Placeholder */}
-        <div className="w-full sm:w-24 h-32 sm:h-24 rounded-lg bg-surface-alt border border-border overflow-hidden flex-shrink-0 flex items-center justify-center">
+        <div className="relative w-full sm:w-24 h-32 sm:h-24 rounded-lg bg-surface-alt border border-border overflow-hidden flex-shrink-0 flex items-center justify-center">
           {post.photoUrl ? (
-            <img
+            <Image
               src={post.photoUrl}
               alt={post.itemName}
+              fill
+              sizes="(max-width: 640px) 100vw, 96px"
               className="w-full h-full object-cover"
-              loading="lazy"
             />
           ) : (
             <div className="flex flex-col items-center justify-center p-2 text-text-muted text-center">

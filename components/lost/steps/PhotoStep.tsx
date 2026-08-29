@@ -122,6 +122,7 @@ export default function PhotoStep({
 
           {photos[0] ? (
             <div className="relative w-full h-44 rounded-lg overflow-hidden border border-border bg-surface">
+              {/* local blob preview, not optimized by next/image */}
               <img
                 src={photos[0]}
                 alt="Uploaded item preview 1"
@@ -195,6 +196,7 @@ export default function PhotoStep({
 
           {photos[1] ? (
             <div className="relative w-full h-44 rounded-lg overflow-hidden border border-border bg-surface">
+              {/* local blob preview, not optimized by next/image */}
               <img
                 src={photos[1]}
                 alt="Uploaded item preview 2"

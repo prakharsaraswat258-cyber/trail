@@ -153,6 +153,7 @@ export default function ReviewStep({
                   key={i}
                   className="w-16 h-16 rounded-lg overflow-hidden border border-border-strong bg-surface-alt"
                 >
+                  {/* local blob preview, not optimized by next/image */}
                   <img
                     src={photo}
                     alt={`Preview ${i + 1}`}

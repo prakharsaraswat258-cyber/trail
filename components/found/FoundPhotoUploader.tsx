@@ -239,6 +239,7 @@ export const FoundPhotoUploader: React.FC<FoundPhotoUploaderProps> = ({
             >
               {item.status === "ready" && (
                 <>
+                  {/* local blob preview, not optimized by next/image */}
                   <img
                     src={item.dataUrl}
                     alt={`Found item preview ${index + 1}`}
