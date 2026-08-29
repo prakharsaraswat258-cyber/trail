@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Search, PlusCircle, Bookmark, Bell } from 'lucide-react';
+import { Home, Search, PlusCircle, Bookmark, User } from 'lucide-react';
 import { PostActionSheet } from '@/components/PostActionSheet';
 
 export function BottomNav() {
@@ -13,6 +13,7 @@ export function BottomNav() {
   const isHome = pathname === '/' || pathname === '/browse';
   const isSearch = pathname === '/search' || pathname?.startsWith('/search');
   const isMyPosts = pathname === '/my-posts' || pathname?.startsWith('/my-posts');
+  const isProfile = pathname === '/profile' || pathname?.startsWith('/profile');
 
   return (
     <>
@@ -65,15 +66,17 @@ export function BottomNav() {
             <span className={`text-[10px] ${isMyPosts ? 'font-semibold' : 'font-medium'}`}>My posts</span>
           </Link>
 
-          {/* Notifications - Static */}
-          <button
-            type="button"
-            aria-label="Notifications"
-            className="flex-1 min-w-[44px] min-h-[44px] flex flex-col items-center justify-center gap-1 text-[#6E6B5F] hover:text-[#1C1B18]"
+          {/* Profile */}
+          <Link
+            href="/profile"
+            aria-label="Profile"
+            className={`flex-1 min-w-[44px] min-h-[44px] flex flex-col items-center justify-center gap-1 ${
+              isProfile ? 'text-[#C96442]' : 'text-[#6E6B5F] hover:text-[#1C1B18]'
+            }`}
           >
-            <Bell className="w-5 h-5" />
-            <span className="text-[10px] font-medium">Alerts</span>
-          </button>
+            <User className="w-5 h-5" />
+            <span className={`text-[10px] ${isProfile ? 'font-semibold' : 'font-medium'}`}>Profile</span>
+          </Link>
         </div>
       </nav>
 
@@ -86,3 +89,4 @@ export function BottomNav() {
   );
 }
 
+export default BottomNav;
