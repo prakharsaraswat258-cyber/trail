@@ -7,7 +7,7 @@ interface DescriptionStepProps {
   description: string;
   error?: string;
   onChange: (val: string) => void;
-  headingRef: React.RefObject<HTMLHeadingElement>;
+  headingRef: React.RefObject<HTMLHeadingElement | null>;
 }
 
 export default function DescriptionStep({

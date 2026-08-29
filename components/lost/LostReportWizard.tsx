@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { ChevronLeft } from 'lucide-react';
 import WizardProgress from './WizardProgress';
 import ItemDetailsStep from './steps/ItemDetailsStep';
 import DescriptionStep from './steps/DescriptionStep';
@@ -68,7 +67,7 @@ export default function LostReportWizard({ onBackToSearch }: LostReportWizardPro
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
 
   // Heading ref to autofocus on step change
-  const headingRef = useRef<HTMLHeadingElement>(null);
+  const headingRef = useRef<HTMLHeadingElement | null>(null);
 
   // Check for saved draft on mount
   useEffect(() => {
@@ -298,10 +297,6 @@ export default function LostReportWizard({ onBackToSearch }: LostReportWizardPro
       saveDraft(prevStep, formData);
     } else if (onBackToSearch) {
       onBackToSearch();
-    } else if (typeof window !== 'undefined' && window.history.length > 1) {
-      router.back();
-    } else {
-      router.push('/');
     }
   };
 
@@ -441,21 +436,6 @@ export default function LostReportWizard({ onBackToSearch }: LostReportWizardPro
           </div>
         </div>
       )}
-
-      {/* Top Header Bar / Back Navigation */}
-      <div className="flex items-center justify-between">
-        <button
-          type="button"
-          onClick={handleBack}
-          aria-label="Go back to previous step or exit report"
-          className="inline-flex items-center justify-center gap-1.5 min-h-[44px] min-w-[44px] px-3.5 py-2 bg-surface border border-border-strong rounded-lg text-text-primary hover:bg-surface-alt transition-colors focus:outline-none focus:ring-2 focus:ring-accent/20 cursor-pointer shadow-none"
-        >
-          <ChevronLeft className="w-5 h-5 text-text-primary flex-shrink-0" strokeWidth={2} />
-          <span className="hidden min-[430px]:inline text-sm font-semibold text-text-primary">
-            Back
-          </span>
-        </button>
-      </div>
 
       {/* Wizard Progress Stepper */}
       <div className="bg-surface p-4 sm:p-5 rounded-lg border border-border shadow-sm">

@@ -7,7 +7,7 @@ import { LostWizardFormData } from '../../../lib/draft/lostWizardDraftStorage';
 interface ReviewStepProps {
   formData: LostWizardFormData;
   onJumpToStep: (step: number) => void;
-  headingRef: React.RefObject<HTMLHeadingElement>;
+  headingRef: React.RefObject<HTMLHeadingElement | null>;
 }
 
 export default function ReviewStep({

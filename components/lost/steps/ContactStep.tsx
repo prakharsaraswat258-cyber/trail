@@ -19,7 +19,7 @@ interface ContactStepProps {
   errors: Record<string, string>;
   onContactChange: (field: string, value: string) => void;
   onNotificationChange: (field: string, value: boolean) => void;
-  headingRef: React.RefObject<HTMLHeadingElement>;
+  headingRef: React.RefObject<HTMLHeadingElement | null>;
   isLoggedIn?: boolean;
 }
 

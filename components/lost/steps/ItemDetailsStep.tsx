@@ -12,7 +12,7 @@ interface ItemDetailsStepProps {
   };
   errors: Record<string, string>;
   onChange: (field: string, value: any) => void;
-  headingRef: React.RefObject<HTMLHeadingElement>;
+  headingRef: React.RefObject<HTMLHeadingElement | null>;
 }
 
 export default function ItemDetailsStep({
