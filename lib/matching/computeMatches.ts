@@ -313,12 +313,29 @@ export async function computeAndSaveMatchesForFoundItem(
     }
 
     // 5. Upsert into public.matches (unique on lost_report_id, found_item_id)
-    const { data: savedMatches, error: upsertError } = await supabase
+    let { data: savedMatches, error: upsertError } = await supabase
       .from('matches')
       .upsert(matchRowsToUpsert, {
         onConflict: 'lost_report_id,found_item_id',
       })
       .select();
+
+    if (upsertError && (upsertError.message?.includes('ai_reasoning') || upsertError.message?.includes('confidence_label') || upsertError.code === 'PGRST204')) {
+      const baseRows = matchRowsToUpsert.map((r) => ({
+        lost_report_id: r.lost_report_id,
+        found_item_id: r.found_item_id,
+        confidence_score: r.confidence_score,
+        status: r.status,
+      }));
+      const retry = await supabase
+        .from('matches')
+        .upsert(baseRows, { onConflict: 'lost_report_id,found_item_id' })
+        .select();
+      if (!retry.error) {
+        savedMatches = matchRowsToUpsert as any;
+        upsertError = null;
+      }
+    }
 
     if (upsertError) {
       console.error('Failed to upsert matches in computeAndSaveMatchesForFoundItem:', upsertError);
@@ -456,12 +473,29 @@ export async function computeAndSaveMatchesForLostReport(
     }
 
     // 5. Upsert into public.matches (unique on lost_report_id, found_item_id)
-    const { data: savedMatches, error: upsertError } = await supabase
+    let { data: savedMatches, error: upsertError } = await supabase
       .from('matches')
       .upsert(matchRowsToUpsert, {
         onConflict: 'lost_report_id,found_item_id',
       })
       .select();
+
+    if (upsertError && (upsertError.message?.includes('ai_reasoning') || upsertError.message?.includes('confidence_label') || upsertError.code === 'PGRST204')) {
+      const baseRows = matchRowsToUpsert.map((r) => ({
+        lost_report_id: r.lost_report_id,
+        found_item_id: r.found_item_id,
+        confidence_score: r.confidence_score,
+        status: r.status,
+      }));
+      const retry = await supabase
+        .from('matches')
+        .upsert(baseRows, { onConflict: 'lost_report_id,found_item_id' })
+        .select();
+      if (!retry.error) {
+        savedMatches = matchRowsToUpsert as any;
+        upsertError = null;
+      }
+    }
 
     if (upsertError) {
       console.error('Failed to upsert matches in computeAndSaveMatchesForLostReport:', upsertError);
