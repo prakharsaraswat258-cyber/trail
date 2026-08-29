@@ -477,7 +477,7 @@ export const FoundItemForm: React.FC<FoundItemFormProps> = ({ onSuccess }) => {
         </BentoCard>
 
         {/* Desktop Submit Button */}
-        <div className="pt-2">
+        <div className="hidden sm:block pt-2">
           <Button
             type="submit"
             variant="primary"

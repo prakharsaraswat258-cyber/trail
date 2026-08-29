@@ -126,7 +126,7 @@ export default function ClaimModal({ isOpen, item, onClose, onSuccessClose }) {
         setIsSubmitted(true);
       }
     } catch (err) {
-      setErrors({ general: 'Failed to submit claim. Please try again.' });
+      setErrors({ general: err?.message || 'Failed to submit claim. Please try again.' });
     } finally {
       setIsSubmitting(false);
     }
