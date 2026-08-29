@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { X, Bookmark, MapPin } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
@@ -338,15 +339,35 @@ export default function ItemDetailDrawer({
               {/* Divider */}
               <hr className="border-[rgba(0,0,0,0.07)] my-4" />
 
-              {/* Claim Action Button */}
-              <div className="pt-1 pb-2">
-                <button
-                  type="button"
-                  onClick={handleOpenClaimModal}
-                  className="w-full min-h-[44px] px-6 py-3 rounded-lg bg-[#C96442] hover:bg-[#B5572E] active:bg-[#9E4622] text-[#FFFFFF] text-sm font-semibold transition-colors flex items-center justify-center shadow-none"
-                >
-                  Claim This Item
-                </button>
+              {/* Action Buttons */}
+              <div className="pt-1 pb-2 flex flex-col sm:flex-row gap-2.5">
+                {item.type === 'lost' ? (
+                  <>
+                    {item.ticketId && (
+                      <Link
+                        href={`/lost/${item.ticketId}`}
+                        className="flex-1 min-h-[44px] px-4 py-3 rounded-lg bg-[#FAF8F3] hover:bg-[#F3F1EB] text-[#1C1B18] border border-[rgba(0,0,0,0.14)] text-sm font-semibold transition-colors flex items-center justify-center text-center"
+                      >
+                        Track Report Status
+                      </Link>
+                    )}
+                    <button
+                      type="button"
+                      onClick={handleOpenClaimModal}
+                      className="flex-1 min-h-[44px] px-4 py-3 rounded-lg bg-[#C96442] hover:bg-[#B5572E] active:bg-[#9E4622] text-[#FFFFFF] text-sm font-semibold transition-colors flex items-center justify-center shadow-none"
+                    >
+                      I Found This Item
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleOpenClaimModal}
+                    className="w-full min-h-[44px] px-6 py-3 rounded-lg bg-[#C96442] hover:bg-[#B5572E] active:bg-[#9E4622] text-[#FFFFFF] text-sm font-semibold transition-colors flex items-center justify-center shadow-none"
+                  >
+                    Claim This Item
+                  </button>
+                )}
               </div>
             </div>
           </div>

@@ -163,7 +163,13 @@ export default function ClaimModal({ isOpen, item, onClose, onSuccessClose }) {
         <div className="px-5 py-4 border-b border-[rgba(0,0,0,0.07)] flex items-center justify-between">
           <div>
             <h2 id="claim-modal-title" className="text-lg font-bold text-[#1C1B18]">
-              {isSubmitted ? 'Claim Confirmation' : 'Claim Item'}
+              {isSubmitted
+                ? item.type === 'lost'
+                  ? 'Information Submitted'
+                  : 'Claim Confirmation'
+                : item.type === 'lost'
+                ? 'I Found This Item'
+                : 'Claim Item'}
             </h2>
             <p className="text-xs text-[#6E6B5F] mt-0.5 truncate max-w-[340px]">
               {item.title}
@@ -188,9 +194,13 @@ export default function ClaimModal({ isOpen, item, onClose, onSuccessClose }) {
               <div className="w-14 h-14 rounded-full bg-[#ECFDF5] text-[#059669] flex items-center justify-center mb-4">
                 <CheckCircle2 className="w-8 h-8" />
               </div>
-              <h3 className="text-xl font-bold text-[#1C1B18] mb-2">Claim submitted</h3>
+              <h3 className="text-xl font-bold text-[#1C1B18] mb-2">
+                {item.type === 'lost' ? 'Details submitted' : 'Claim submitted'}
+              </h3>
               <p className="text-sm text-[#6E6B5F] max-w-sm mb-6 leading-relaxed">
-                We&apos;ve notified the finder. You&apos;ll hear back once they confirm.
+                {item.type === 'lost'
+                  ? "We've notified the person who reported this lost item. You'll hear back once they connect."
+                  : "We've notified the finder. You'll hear back once they confirm."}
               </p>
               {claimId && (
                 <div className="w-full max-w-xs mb-6 px-3 py-2 rounded-md bg-[#F3F1EB] text-xs text-[#6E6B5F]">
@@ -278,13 +288,18 @@ export default function ClaimModal({ isOpen, item, onClose, onSuccessClose }) {
                   htmlFor="claim-proof"
                   className="block text-xs font-semibold text-[#1C1B18] mb-1.5"
                 >
-                  Proof / Identifying Detail <span className="text-[#C96442]">*</span>
+                  {item.type === 'lost' ? 'Found Location & Details' : 'Proof / Identifying Detail'}{' '}
+                  <span className="text-[#C96442]">*</span>
                 </label>
                 <textarea
                   id="claim-proof"
                   required
                   rows={4}
-                  placeholder="Describe something specific about this item only the owner would know, e.g. a scratch, sticker, or contents"
+                  placeholder={
+                    item.type === 'lost'
+                      ? 'Describe where and when you found this item, its current condition, or how the owner can safely collect it'
+                      : 'Describe something specific about this item only the owner would know, e.g. a scratch, sticker, or contents'
+                  }
                   value={proof}
                   onChange={(e) => {
                     setProof(e.target.value);
@@ -313,6 +328,8 @@ export default function ClaimModal({ isOpen, item, onClose, onSuccessClose }) {
                       <Loader2 className="w-4 h-4 animate-spin" />
                       <span>Submitting…</span>
                     </>
+                  ) : item.type === 'lost' ? (
+                    'Send Details'
                   ) : (
                     'Submit Claim'
                   )}
