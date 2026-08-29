@@ -245,3 +245,70 @@ export async function computeAndSaveMatchesForFoundItem(
     return [];
   }
 }
+
+/**
+ * Computes match scores against all active found items and upserts qualifying matches into Supabase `matches`.
+ */
+export async function computeAndSaveMatchesForLostReport(
+  lostReport: MatchCandidateLostReport
+): Promise<MatchRecord[]> {
+  if (!lostReport?.id) {
+    return [];
+  }
+
+  try {
+    const supabase = createServiceRoleClient();
+
+    // 1. Fetch active found items (status != 'returned')
+    const { data: foundItems, error } = await supabase
+      .from('found_items')
+      .select('*')
+      .neq('status', 'returned');
+
+    if (error || !foundItems || foundItems.length === 0) {
+      return [];
+    }
+
+    // 2. Score candidate found items
+    const matchRowsToUpsert: Array<{
+      lost_report_id: string;
+      found_item_id: string;
+      confidence_score: number;
+      status: 'suggested';
+    }> = [];
+
+    for (const item of foundItems) {
+      const score = scoreMatch(item, lostReport);
+      if (score >= 30) {
+        matchRowsToUpsert.push({
+          lost_report_id: lostReport.id,
+          found_item_id: item.id,
+          confidence_score: score,
+          status: 'suggested',
+        });
+      }
+    }
+
+    if (matchRowsToUpsert.length === 0) {
+      return [];
+    }
+
+    // 3. Upsert into public.matches (unique on lost_report_id, found_item_id)
+    const { data: savedMatches, error: upsertError } = await supabase
+      .from('matches')
+      .upsert(matchRowsToUpsert, {
+        onConflict: 'lost_report_id,found_item_id',
+      })
+      .select();
+
+    if (upsertError) {
+      console.error('Failed to upsert matches in computeAndSaveMatchesForLostReport:', upsertError);
+      return [];
+    }
+
+    return savedMatches || [];
+  } catch (err) {
+    console.error('Error in computeAndSaveMatchesForLostReport:', err);
+    return [];
+  }
+}

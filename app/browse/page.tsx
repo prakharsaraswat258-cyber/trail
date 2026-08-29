@@ -33,6 +33,14 @@ function formatTimeAgo(isoString: string): string {
   }
 }
 
+function mapScoreToTier(score?: number | null): 'strong' | 'possible' | 'weak' | null {
+  if (score === undefined || score === null) return null;
+  if (score >= 80) return 'strong';
+  if (score >= 50) return 'possible';
+  if (score > 0) return 'weak';
+  return null;
+}
+
 export default function BrowsePage() {
   const [items, setItems] = useState<BrowseItem[]>(MOCK_ITEMS);
   const [selectedType, setSelectedType] = useState<FilterType>('all');
@@ -45,7 +53,7 @@ export default function BrowsePage() {
   const loadLiveItems = useCallback(async () => {
     try {
       const supabase = createClient();
-      const [foundRes, lostRes] = await Promise.all([
+      const [foundRes, lostRes, matchRes] = await Promise.all([
         supabase
           .from('found_items_public')
           .select('*')
@@ -56,7 +64,28 @@ export default function BrowsePage() {
           .select('*')
           .order('created_at', { ascending: false })
           .limit(30),
+        supabase
+          .from('matches')
+          .select('found_item_id, lost_report_id, confidence_score'),
       ]);
+
+      const foundMatchMap: Record<string, number> = {};
+      const lostMatchMap: Record<string, number> = {};
+
+      (matchRes.data || []).forEach((m: any) => {
+        if (m.found_item_id) {
+          const current = foundMatchMap[m.found_item_id] ?? -1;
+          if (m.confidence_score > current) {
+            foundMatchMap[m.found_item_id] = m.confidence_score;
+          }
+        }
+        if (m.lost_report_id) {
+          const current = lostMatchMap[m.lost_report_id] ?? -1;
+          if (m.confidence_score > current) {
+            lostMatchMap[m.lost_report_id] = m.confidence_score;
+          }
+        }
+      });
 
       const liveFound: BrowseItem[] = (foundRes.data || [])
         .filter((row: any) => {
@@ -72,7 +101,7 @@ export default function BrowsePage() {
           timeAgo: formatTimeAgo(row.created_at),
           photoUrl: row.photos[0],
           type: 'found',
-          matchConfidence: 'strong',
+          matchConfidence: mapScoreToTier(foundMatchMap[row.id]),
           status: row.status === 'returned' ? 'resolved' : 'active',
           description: row.description,
         }));
@@ -91,7 +120,7 @@ export default function BrowsePage() {
           timeAgo: formatTimeAgo(row.created_at),
           photoUrl: row.photos[0],
           type: 'lost',
-          matchConfidence: row.status === 'potential_match' ? 'strong' : null,
+          matchConfidence: mapScoreToTier(lostMatchMap[row.id]),
           status:
             row.status === 'resolved'
               ? 'resolved'

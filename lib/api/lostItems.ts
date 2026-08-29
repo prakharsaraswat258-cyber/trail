@@ -265,6 +265,17 @@ export async function submitLostReport(
     throw new Error(error.message);
   }
 
+  // Trigger background matching calculation without blocking user response
+  if (typeof window !== 'undefined' && data?.id) {
+    fetch('/api/lost-reports/match', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ lostReportId: data.id }),
+    }).catch((matchErr) => {
+      console.warn('Failed to trigger background match computation for lost report:', matchErr);
+    });
+  }
+
   return {
     id: data.id,
     ticketId: data.ticket_id,
