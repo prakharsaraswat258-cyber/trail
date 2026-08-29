@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   ArrowLeft,
   Edit3,
@@ -340,11 +341,13 @@ export const ReportDetailView: React.FC<ReportDetailViewProps> = ({ initialRepor
               {report.photos.map((src, i) => (
                 <div
                   key={i}
-                  className="aspect-square rounded-lg border border-border overflow-hidden bg-surface-alt"
+                  className="relative aspect-square rounded-lg border border-border overflow-hidden bg-surface-alt"
                 >
-                  <img
+                  <Image
                     src={src}
                     alt={`Found item photo ${i + 1}`}
+                    fill
+                    sizes="(max-width: 640px) 33vw, 150px"
                     className="w-full h-full object-cover"
                   />
                 </div>

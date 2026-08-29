@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import Image from 'next/image';
 import { Bookmark, MapPin, CheckCircle2 } from 'lucide-react';
 import { BrowseItem } from './mockData';
 
@@ -128,12 +129,12 @@ export function ItemCard({ item, isHighlighted, onClaimAction }: ItemCardProps) 
     >
       {/* Photo Container (1:1 aspect ratio on mobile) */}
       <div className="relative w-full aspect-square bg-[#F3F1EB] overflow-hidden">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <Image
           src={imgSrc || item.photoUrl}
           alt={item.title}
+          fill
+          sizes="(max-width: 768px) 100vw, 640px"
           className="w-full h-full object-cover"
-          loading="lazy"
           onError={() => setImgSrc('https://images.unsplash.com/photo-1582139329536-e7284fece509?auto=format&fit=crop&w=600&q=80')}
         />
 
