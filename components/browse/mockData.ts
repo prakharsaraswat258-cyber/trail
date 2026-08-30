@@ -14,17 +14,6 @@ export interface BrowseItem {
 
 export const MOCK_ITEMS: BrowseItem[] = [
   {
-    id: 'item-1',
-    title: 'Hydro Flask 32oz Wide Mouth (Cobalt Blue)',
-    category: 'Bottles & Tumblers',
-    zone: 'Student Center · 2nd Floor',
-    timeAgo: '20m ago',
-    photoUrl: 'https://images.unsplash.com/photo-1602143407151-7111542de6e8?auto=format&fit=crop&w=600&q=80',
-    type: 'found',
-    matchConfidence: 'strong',
-    status: 'active',
-  },
-  {
     id: 'item-2',
     title: 'Apple AirPods Pro Gen 2 in MagSafe Case',
     category: 'Audio & Tech',

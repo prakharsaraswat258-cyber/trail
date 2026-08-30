@@ -12,58 +12,74 @@ function LoginForm() {
   const redirectPath = searchParams.get('redirect') || '/my-posts';
 
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
-  const [email, setEmail] = useState('demo@lpu.in');
-  const [password, setPassword] = useState('Password@123');
-  const [fullName, setFullName] = useState('Prakhar Saraswat');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const supabase = createClient();
 
-  const handleDirectDemoLogin = () => {
-    const demoUser = {
-      id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
-      email: email.trim() || 'demo@lpu.in',
-      user_metadata: {
-        full_name: fullName.trim() || 'Prakhar Saraswat',
-        student_id: '12345678',
-      },
-    };
-    localStorage.setItem('lpu_find_demo_user', JSON.stringify(demoUser));
-    router.push(redirectPath);
-    router.refresh();
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
     setSuccessMsg(null);
-    setLoading(true);
 
-    const targetEmail = email.trim() || 'demo@lpu.in';
-    const targetPassword = password || 'Password@123';
+    const targetEmail = email.trim();
+    const targetPassword = password;
+
+    if (!targetEmail || !targetPassword) {
+      setErrorMsg('Please enter both your email address and password.');
+      return;
+    }
+
+    if (mode === 'signup' && !fullName.trim()) {
+      setErrorMsg('Please enter your full name.');
+      return;
+    }
+
+    setLoading(true);
 
     try {
       if (mode === 'signup') {
-        const { data, error } = await supabase.auth.signUp({
+        const res = await fetch('/api/auth/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: targetEmail,
+            password: targetPassword,
+            fullName: fullName.trim(),
+          }),
+        });
+
+        const result = await res.json();
+
+        if (!res.ok) {
+          setErrorMsg(result.error || 'Failed to create account.');
+          if (result.code === 'user_already_exists') {
+            setMode('signin');
+          }
+          return;
+        }
+
+        // Account is created and pre-confirmed, log in immediately
+        const { data, error } = await supabase.auth.signInWithPassword({
           email: targetEmail,
           password: targetPassword,
-          options: {
-            data: {
-              full_name: fullName.trim() || undefined,
-            },
-          },
         });
+
+        if (error) {
+          setSuccessMsg('Account created successfully! Please sign in with your password.');
+          setMode('signin');
+          return;
+        }
 
         if (data?.session) {
           router.push(redirectPath);
           router.refresh();
           return;
         }
-
-        // If email confirmation is required or rate-limited, provide seamless instant demo login
-        handleDirectDemoLogin();
       } else {
         const { data, error } = await supabase.auth.signInWithPassword({
           email: targetEmail,
@@ -71,16 +87,18 @@ function LoginForm() {
         });
 
         if (error) {
-          // If Supabase returns 'Email not confirmed' or invalid password, log in with demo session
-          handleDirectDemoLogin();
+          setErrorMsg(error.message || 'Invalid email or password.');
           return;
         }
 
-        router.push(redirectPath);
-        router.refresh();
+        if (data?.session) {
+          router.push(redirectPath);
+          router.refresh();
+          return;
+        }
       }
-    } catch {
-      handleDirectDemoLogin();
+    } catch (err: any) {
+      setErrorMsg(err?.message || 'An unexpected error occurred. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -101,34 +119,6 @@ function LoginForm() {
             ? 'Access your lost and found reports and manage claims.'
             : 'Join the campus community to report and track items.'}
         </p>
-      </div>
-
-      {/* Quick 1-Click Demo Login Box */}
-      <div className="mb-5 p-3.5 rounded-lg bg-[#FAF8F3] border border-[#C96442]/25 text-center space-y-2">
-        <div className="flex items-center justify-between text-xs font-semibold text-[#1C1B18]">
-          <span>⚡ Demo / Reviewer Access</span>
-          <span className="text-[10px] uppercase font-bold text-[#059669] bg-[#ECFDF5] px-1.5 py-0.5 rounded">
-            Pre-Verified
-          </span>
-        </div>
-        <p className="text-[11px] text-[#6E6B5F] text-left leading-relaxed">
-          Skip manual signup and log in directly as a verified campus student.
-        </p>
-        <button
-          type="button"
-          onClick={handleDirectDemoLogin}
-          className="w-full py-2 px-3 bg-[#1C1B18] hover:bg-[#2A2825] active:scale-[0.99] text-white rounded-md text-xs font-semibold transition-all shadow-sm flex items-center justify-center gap-1.5"
-        >
-          <span>⚡ 1-Click Demo Sign-in</span>
-        </button>
-      </div>
-
-      <div className="relative flex py-2 items-center">
-        <div className="flex-grow border-t border-[rgba(0,0,0,0.07)]"></div>
-        <span className="flex-shrink mx-2 text-[10px] uppercase font-semibold text-[#A8A49A]">
-          or with credentials
-        </span>
-        <div className="flex-grow border-t border-[rgba(0,0,0,0.07)]"></div>
       </div>
 
       {/* Inline Error Text */}

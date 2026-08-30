@@ -6,6 +6,7 @@ import { ArrowLeft, Edit3, ShieldCheck, Check, Sparkles, Gift, Clock, Award, Che
 import { BottomNav } from '@/components/browse/BottomNav';
 import { NotificationBell } from '@/components/layout/NotificationBell';
 import { useToast } from '@/components/ui/Toast';
+import { createClient } from '@/lib/supabase/client';
 
 // Default student identity matching LPU standard credentials
 const DEFAULT_STUDENT = {
@@ -141,14 +142,47 @@ export default function ProfilePage() {
   const { showToast } = useToast();
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('lpufind_student_profile');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        setStudent(parsed);
-        setEditFormData(parsed);
-      }
-    } catch {}
+    async function loadProfile() {
+      try {
+        const saved = localStorage.getItem('lpufind_student_profile');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          setStudent(parsed);
+          setEditFormData(parsed);
+          return;
+        }
+
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: profileRow } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .maybeSingle();
+
+          const fullName = profileRow?.full_name || user.user_metadata?.full_name || (user.email ? user.email.split('@')[0] : 'LPU Student');
+          const initials = fullName
+            .split(' ')
+            .map((n: string) => n[0])
+            .join('')
+            .toUpperCase()
+            .slice(0, 2) || 'ST';
+
+          const dynamicStudent = {
+            ...DEFAULT_STUDENT,
+            name: fullName,
+            email: user.email || profileRow?.email || DEFAULT_STUDENT.email,
+            regNo: profileRow?.student_id || user.user_metadata?.student_id || DEFAULT_STUDENT.regNo,
+            phone: profileRow?.phone || DEFAULT_STUDENT.phone,
+            avatarInitials: initials,
+          };
+          setStudent(dynamicStudent);
+          setEditFormData(dynamicStudent);
+        }
+      } catch {}
+    }
+    loadProfile();
   }, []);
 
   const handleCopyRegNo = () => {
