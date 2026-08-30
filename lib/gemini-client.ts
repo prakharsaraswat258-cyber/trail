@@ -20,4 +20,9 @@ export function getGeminiClient(): GoogleGenAI {
   return geminiClientInstance;
 }
 
-export const GEMINI_MATCH_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+export const GEMINI_MATCH_MODEL = process.env.GEMINI_MODEL || 'gemini-3.5-flash';
+export const GEMINI_FALLBACK_MODELS = [
+  GEMINI_MATCH_MODEL,
+  'gemini-3.6-flash',
+  'gemini-flash-latest',
+];

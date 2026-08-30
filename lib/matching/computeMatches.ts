@@ -3,6 +3,7 @@ import {
   isWithinDays,
   mapScoreToLabel,
   rankCandidatesWithGemini,
+  EnrichedMatchResult,
 } from '../matching';
 
 export interface MatchCandidateFoundItem {
@@ -349,14 +350,29 @@ export async function computeAndSaveMatchesForFoundItem(
   }
 }
 
+export interface LostItemMatchSpec {
+  id?: string;
+  category?: string | null;
+  item_name?: string | null;
+  description?: string | null;
+  date_lost?: string | null;
+  location_building?: string | null;
+  location_area?: string | null;
+  location_lost?: string | null;
+  color?: string | null;
+  brand?: string | null;
+  [key: string]: any;
+}
+
+
 /**
- * Computes AI-enhanced match scores against active found items and upserts qualifying matches into Supabase `matches`.
- * Triggered when a new lost report is submitted.
+ * Pure search function: queries found items, pre-filters, and scores candidates with Gemini AI.
+ * Does NOT persist to database — usable for both live search assistant and report matching.
  */
-export async function computeAndSaveMatchesForLostReport(
-  lostReport: MatchCandidateLostReport
-): Promise<MatchRecord[]> {
-  if (!lostReport?.id || !lostReport?.category) {
+export async function findMatchesForLostSpecs(
+  lostSpec: LostItemMatchSpec
+): Promise<EnrichedMatchResult[]> {
+  if (!lostSpec?.category) {
     return [];
   }
 
@@ -368,18 +384,37 @@ export async function computeAndSaveMatchesForLostReport(
     const { data: foundItems, error } = await supabase
       .from('found_items')
       .select('id, category, item_name, description, location_building, location_floor, location_landmark_or_room, date_found, time_found, time_period, created_at')
-      .eq('category', lostReport.category)
+      .eq('category', lostSpec.category)
       .eq('status', 'with_finder');
 
     if (error || !foundItems || foundItems.length === 0) {
       return [];
     }
 
+    // Build target candidate for heuristic scoring
+    const descParts = [
+      lostSpec.brand ? `Brand: ${lostSpec.brand}` : '',
+      lostSpec.color ? `Color: ${lostSpec.color}` : '',
+      lostSpec.description || '',
+    ]
+      .filter(Boolean)
+      .join('. ');
+
+    const targetCandidate: MatchCandidateLostReport = {
+      id: lostSpec.id || 'search-spec',
+      category: lostSpec.category,
+      item_name: lostSpec.item_name || lostSpec.brand || 'Lost Item',
+      description: descParts || lostSpec.description || '',
+      date_lost: lostSpec.date_lost || null,
+      location_building: lostSpec.location_building || lostSpec.location_lost || null,
+      location_area: lostSpec.location_area || null,
+    };
+
     // 2. Pre-filter by date window (+-30 days) and calculate base heuristic score
     const scoredCandidates = foundItems
-      .filter((item) => isWithinDays(item.date_found, lostReport.date_lost, 30))
+      .filter((item) => isWithinDays(item.date_found, targetCandidate.date_lost, 30))
       .map((item) => {
-        const hScore = scoreMatch(item, lostReport);
+        const hScore = scoreMatch(item, targetCandidate);
         const loc = [
           item.location_building,
           item.location_floor,
@@ -409,34 +444,27 @@ export async function computeAndSaveMatchesForLostReport(
     // 3. Re-rank candidates with Gemini with structured output, fallback gracefully on failure
     let aiScoresMap: Map<string, { confidence_score: number; ai_reasoning: string }> | null = null;
     try {
-      const lostLocation = lostReport.location_area
-        ? `${lostReport.location_building || ''} (${lostReport.location_area})`
-        : lostReport.location_building || '';
+      const lostLocation = targetCandidate.location_area
+        ? `${targetCandidate.location_building || ''} (${targetCandidate.location_area})`
+        : targetCandidate.location_building || lostSpec.location_lost || '';
 
       aiScoresMap = await rankCandidatesWithGemini(
         {
           type: 'lost',
-          item_name: lostReport.item_name,
-          category: lostReport.category,
-          description: lostReport.description,
-          date: lostReport.date_lost,
+          item_name: targetCandidate.item_name,
+          category: targetCandidate.category,
+          description: targetCandidate.description,
+          date: targetCandidate.date_lost,
           location: lostLocation,
         },
         scoredCandidates
       );
     } catch (geminiError) {
-      console.error('Gemini re-ranking failed in computeAndSaveMatchesForLostReport, falling back to heuristic:', geminiError);
+      console.error('Gemini re-ranking failed in findMatchesForLostSpecs, falling back to heuristic:', geminiError);
     }
 
     // 4. Assemble matches using AI score or fallback heuristic
-    const matchRowsToUpsert: Array<{
-      lost_report_id: string;
-      found_item_id: string;
-      confidence_score: number;
-      confidence_label: 'strong' | 'possible' | 'weak';
-      ai_reasoning: string;
-      status: 'suggested';
-    }> = [];
+    const results: EnrichedMatchResult[] = [];
 
     for (const candidate of scoredCandidates) {
       let finalScore: number;
@@ -457,22 +485,55 @@ export async function computeAndSaveMatchesForLostReport(
 
       // Exclude matches with confidence < 40
       if (finalScore >= 40) {
-        matchRowsToUpsert.push({
-          lost_report_id: lostReport.id,
+        results.push({
           found_item_id: candidate.id,
           confidence_score: finalScore,
           confidence_label: label,
           ai_reasoning: finalReasoning,
-          status: 'suggested',
+          item_name: candidate.item_name || 'Found Item',
+          category: candidate.category || lostSpec.category,
+          date_found: candidate.date || '',
+          location_found: candidate.location || undefined,
         });
       }
     }
 
-    if (matchRowsToUpsert.length === 0) {
+    results.sort((a, b) => b.confidence_score - a.confidence_score);
+    return results;
+  } catch (err) {
+    console.error('Error in findMatchesForLostSpecs:', err);
+    return [];
+  }
+}
+
+/**
+ * Computes AI-enhanced match scores against active found items and upserts qualifying matches into Supabase `matches`.
+ * Triggered when a new lost report is submitted.
+ */
+export async function computeAndSaveMatchesForLostReport(
+  lostReport: MatchCandidateLostReport
+): Promise<MatchRecord[]> {
+  if (!lostReport?.id || !lostReport?.category) {
+    return [];
+  }
+
+  try {
+    const enrichedMatches = await findMatchesForLostSpecs(lostReport);
+    if (enrichedMatches.length === 0) {
       return [];
     }
 
-    // 5. Upsert into public.matches (unique on lost_report_id, found_item_id)
+    const supabase = createServiceRoleClient();
+    const matchRowsToUpsert = enrichedMatches.map((m) => ({
+      lost_report_id: lostReport.id,
+      found_item_id: m.found_item_id,
+      confidence_score: m.confidence_score,
+      confidence_label: m.confidence_label,
+      ai_reasoning: m.ai_reasoning,
+      status: 'suggested' as const,
+    }));
+
+    // Upsert into public.matches (unique on lost_report_id, found_item_id)
     let { data: savedMatches, error: upsertError } = await supabase
       .from('matches')
       .upsert(matchRowsToUpsert, {
@@ -508,3 +569,4 @@ export async function computeAndSaveMatchesForLostReport(
     return [];
   }
 }
+

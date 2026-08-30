@@ -1,21 +1,29 @@
 import { createServiceRoleClient } from './supabase/serviceRole';
-import { getGeminiClient, GEMINI_MATCH_MODEL } from './gemini-client';
+import { getGeminiClient, GEMINI_FALLBACK_MODELS } from './gemini-client';
 import { Type } from '@google/genai';
 import {
   MatchCandidateFoundItem,
   MatchCandidateLostReport,
   MatchRecord,
+  LostItemMatchSpec,
+  findMatchesForLostSpecs,
   scoreMatch,
 } from './matching/computeMatches';
+
+export {
+  type LostItemMatchSpec,
+  findMatchesForLostSpecs,
+  scoreMatch,
+};
 
 export interface EnrichedMatchResult {
   found_item_id: string;
   confidence_score: number;
   confidence_label: 'strong' | 'possible' | 'weak';
   ai_reasoning: string;
-  item_name: string;
-  category: string;
-  date_found: string;
+  item_name?: string;
+  category?: string;
+  date_found?: string;
   location_found?: string;
 }
 
@@ -38,6 +46,34 @@ export function mapScoreToLabel(score: number): 'strong' | 'possible' | 'weak' {
   if (score >= 70) return 'strong';
   if (score >= 40) return 'possible';
   return 'weak';
+}
+
+async function generateContentWithRetry(ai: any, params: any) {
+  let lastError: any = null;
+  for (const model of GEMINI_FALLBACK_MODELS) {
+    try {
+      return await ai.models.generateContent({
+        ...params,
+        model,
+      });
+    } catch (err: any) {
+      lastError = err;
+      const isTransient =
+        err?.status === 429 ||
+        err?.status === 503 ||
+        err?.message?.includes('429') ||
+        err?.message?.includes('503') ||
+        err?.message?.includes('RESOURCE_EXHAUSTED') ||
+        err?.message?.includes('UNAVAILABLE') ||
+        err?.message?.includes('quota');
+      if (isTransient) {
+        console.warn(`Transient issue with model ${model} in rankCandidatesWithGemini, trying fallback...`);
+        continue;
+      }
+      throw err;
+    }
+  }
+  throw lastError;
 }
 
 /**
@@ -122,14 +158,15 @@ EVALUATION INSTRUCTIONS:
     required: ['matches'],
   };
 
-  const result = await ai.models.generateContent({
-    model: GEMINI_MATCH_MODEL,
+  const result = await generateContentWithRetry(ai, {
     contents: prompt,
     config: {
       responseMimeType: 'application/json',
       responseSchema,
     },
   });
+
+
 
   const responseText = result.text;
   if (!responseText) {
