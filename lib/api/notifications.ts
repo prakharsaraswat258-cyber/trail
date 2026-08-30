@@ -6,6 +6,14 @@ export interface NotificationItem {
   timestamp: string;
   read: boolean;
   link?: string;
+  // New, optional — only present if/when the backend starts sending match data:
+  matchScore?: number;
+  recipientRole?: 'OWNER' | 'FINDER';
+  partnerName?: string;
+  partnerContact?: string;
+  itemName?: string;
+  ticketId?: string;
+  location?: string;
 }
 
 export interface NotificationsResponse {

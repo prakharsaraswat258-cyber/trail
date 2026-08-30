@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Edit3, ShieldCheck, Check, Sparkles, Gift, Clock, Award, ChevronRight, Copy, CheckCircle2 } from 'lucide-react';
 import { BottomNav } from '@/components/browse/BottomNav';
+import { NotificationBell } from '@/components/layout/NotificationBell';
 
 // Default student identity matching LPU standard credentials
 const DEFAULT_STUDENT = {
@@ -231,17 +232,20 @@ export default function ProfilePage() {
               </Link>
               <h1 className="text-xl font-bold text-[#1C1B18] tracking-tight">Student Profile</h1>
             </div>
-            <button
-              type="button"
-              onClick={() => {
-                setEditFormData({ ...student });
-                setIsEditModalOpen(true);
-              }}
-              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#C96442] hover:bg-[#B5572E] text-white active:scale-95 transition-all shadow-sm"
-            >
-              <Edit3 className="w-3.5 h-3.5" />
-              <span>Edit</span>
-            </button>
+            <div className="flex items-center gap-2">
+              <NotificationBell />
+              <button
+                type="button"
+                onClick={() => {
+                  setEditFormData({ ...student });
+                  setIsEditModalOpen(true);
+                }}
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#C96442] hover:bg-[#B5572E] text-white active:scale-95 transition-all shadow-sm"
+              >
+                <Edit3 className="w-3.5 h-3.5" />
+                <span>Edit</span>
+              </button>
+            </div>
           </div>
         </header>
 
