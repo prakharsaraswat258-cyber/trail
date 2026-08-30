@@ -2,9 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Edit3, ShieldCheck, Check, Sparkles, Gift, Clock, Award, ChevronRight, Copy, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Edit3, ShieldCheck, Check, Sparkles, Gift, Clock, Award, ChevronRight, Copy } from 'lucide-react';
 import { BottomNav } from '@/components/browse/BottomNav';
 import { NotificationBell } from '@/components/layout/NotificationBell';
+import { useToast } from '@/components/ui/Toast';
 
 // Default student identity matching LPU standard credentials
 const DEFAULT_STUDENT = {
@@ -137,7 +138,7 @@ export default function ProfilePage() {
   const [confirmingPerk, setConfirmingPerk] = useState<typeof DEFAULT_PERKS[0] | null>(null);
   const [redeemModalPerk, setRedeemModalPerk] = useState<typeof DEFAULT_PERKS[0] | null>(null);
   const [activeVoucherCode, setActiveVoucherCode] = useState<string | null>(null);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const { showToast } = useToast();
 
   useEffect(() => {
     try {
@@ -150,9 +151,18 @@ export default function ProfilePage() {
     } catch {}
   }, []);
 
-  const showToast = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3500);
+  const handleCopyRegNo = () => {
+    try {
+      if (typeof navigator !== 'undefined' && navigator.clipboard) {
+        navigator.clipboard.writeText(student.regNo).catch(() => {});
+      }
+      showToast('Registration Number Copied', {
+        message: `${student.regNo} copied to clipboard.`,
+        type: 'success',
+      });
+    } catch {
+      // Gracefully handle clipboard errors
+    }
   };
 
   const handleSaveProfile = (e: React.FormEvent) => {
@@ -174,12 +184,15 @@ export default function ProfilePage() {
       localStorage.setItem('lpufind_student_profile', JSON.stringify(updated));
     } catch {}
     setIsEditModalOpen(false);
-    showToast('Profile details updated successfully!');
+    showToast('Profile details updated successfully!', { type: 'success' });
   };
 
   const handleRedeemPerk = (perk: typeof DEFAULT_PERKS[0]) => {
     if (credits < perk.points) {
-      showToast(`Need ${perk.points - credits} more credits to redeem this perk!`);
+      showToast('Insufficient Credits', {
+        message: `Need ${perk.points - credits} more credits to redeem this perk!`,
+        type: 'error',
+      });
       return;
     }
 
@@ -270,7 +283,18 @@ export default function ProfilePage() {
                     </span>
                   )}
                 </div>
-                <p className="text-xs text-[#6E6B5F] font-mono mt-0.5">Reg: {student.regNo}</p>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <button
+                    type="button"
+                    onClick={handleCopyRegNo}
+                    className="inline-flex items-center gap-1 text-xs text-[#6E6B5F] hover:text-[#1C1B18] font-mono group focus:outline-none transition-colors"
+                    title="Click to copy registration number"
+                    aria-label={`Copy Registration Number ${student.regNo}`}
+                  >
+                    <span>Reg: {student.regNo}</span>
+                    <Copy className="w-3 h-3 text-[#A8A49A] group-hover:text-[#C96442] transition-colors" />
+                  </button>
+                </div>
                 <p className="text-xs text-[#6E6B5F] truncate">{student.course}</p>
               </div>
             </div>
@@ -608,21 +632,16 @@ export default function ProfilePage() {
                 onClick={() => {
                   setActiveVoucherCode(null);
                   setRedeemModalPerk(null);
-                  showToast('Voucher saved to your active rewards!');
+                  showToast('Voucher Saved', {
+                    message: 'Voucher saved to your active rewards!',
+                    type: 'success',
+                  });
                 }}
                 className="w-full min-h-[40px] bg-[#C96442] hover:bg-[#B5572E] text-white text-xs font-bold rounded-xl shadow-sm"
               >
                 Done
               </button>
             </div>
-          </div>
-        )}
-
-        {/* TOAST NOTIFICATION */}
-        {toastMessage && (
-          <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 bg-[#1C1B18] text-white px-4 py-2.5 rounded-xl shadow-2xl text-xs font-semibold flex items-center gap-2 border border-white/10">
-            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-            <span>{toastMessage}</span>
           </div>
         )}
 
