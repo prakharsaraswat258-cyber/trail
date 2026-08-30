@@ -47,16 +47,46 @@ const INITIAL_FORM_DATA: LostWizardFormData = {
   },
 };
 
-interface LostReportWizardProps {
-  onBackToSearch?: () => void;
+export interface LostReportInitialSpecs {
+  category?: string;
+  description?: string;
+  color?: string;
+  brand?: string;
+  date_lost?: string;
+  location_lost?: string;
 }
 
-export default function LostReportWizard({ onBackToSearch }: LostReportWizardProps) {
+interface LostReportWizardProps {
+  onBackToSearch?: () => void;
+  initialSpecs?: LostReportInitialSpecs;
+}
+
+export default function LostReportWizard({ onBackToSearch, initialSpecs }: LostReportWizardProps) {
   const router = useRouter();
 
   const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState<LostWizardFormData>(INITIAL_FORM_DATA);
+  const [formData, setFormData] = useState<LostWizardFormData>(() => {
+    if (!initialSpecs) return INITIAL_FORM_DATA;
+    const descParts = [
+      initialSpecs.color ? `Color: ${initialSpecs.color}` : '',
+      initialSpecs.description || '',
+    ]
+      .filter(Boolean)
+      .join('. ');
+
+    return {
+      ...INITIAL_FORM_DATA,
+      category: initialSpecs.category || '',
+      itemName: initialSpecs.brand
+        ? `${initialSpecs.brand} ${initialSpecs.category || ''}`.trim()
+        : initialSpecs.category || '',
+      description: descParts || '',
+      dateLost: initialSpecs.date_lost || INITIAL_FORM_DATA.dateLost,
+      building: initialSpecs.location_lost || '',
+    };
+  });
   const [errors, setErrors] = useState<Record<string, string>>({});
+
   const [liveAnnouncement, setLiveAnnouncement] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittingStatusText, setSubmittingStatusText] = useState('');
