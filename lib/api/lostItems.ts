@@ -250,9 +250,7 @@ export async function submitLostReport(
     status: 'submitted',
   };
 
-  if (validProfileUserId) {
-    insertPayload.user_id = validProfileUserId;
-  }
+  insertPayload.user_id = validProfileUserId || 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
 
   let insertResult = await supabase
     .from('lost_reports')
@@ -275,6 +273,16 @@ export async function submitLostReport(
   if (error) {
     console.error('Supabase submitLostReport error:', error);
     throw new Error(error.message);
+  }
+
+  if (typeof window !== 'undefined' && data?.id) {
+    try {
+      const list = JSON.parse(localStorage.getItem('lpufind_my_post_ids') || '[]');
+      if (!list.includes(data.id)) {
+        list.unshift(data.id);
+        localStorage.setItem('lpufind_my_post_ids', JSON.stringify(list));
+      }
+    } catch {}
   }
 
   // Await AI matching engine computation

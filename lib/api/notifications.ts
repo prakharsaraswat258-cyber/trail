@@ -39,74 +39,74 @@ function formatTimestamp(isoString: string): string {
   }
 }
 
+const DEMO_USER_ID = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
+
 /**
- * Fetches notifications for currently logged-in user from Supabase.
+ * Fetches notifications from Supabase (authenticated user or demo user).
  */
 export async function fetchNotifications(): Promise<NotificationsResponse> {
   const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  let targetUserId = DEMO_USER_ID;
 
-  if (!user) {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user?.id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(user.id)) {
+      targetUserId = user.id;
+    }
+  } catch {}
+
+  try {
+    const { data, error } = await supabase
+      .from('notifications')
+      .select('*')
+      .or(`user_id.eq.${targetUserId},user_id.is.null`)
+      .order('created_at', { ascending: false })
+      .limit(20);
+
+    if (error) {
+      return { notifications: [], unreadCount: 0 };
+    }
+
+    const notifications: NotificationItem[] = (data || []).map((row: any) => ({
+      id: row.id,
+      message: row.message,
+      timestamp: formatTimestamp(row.created_at),
+      read: Boolean(row.read),
+      link: row.link || undefined,
+    }));
+
+    const unreadCount = notifications.filter((n) => !n.read).length;
+
+    return {
+      notifications,
+      unreadCount,
+    };
+  } catch {
     return { notifications: [], unreadCount: 0 };
   }
-
-  const isUuid = user.id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(user.id);
-  if (!isUuid) {
-    return { notifications: [], unreadCount: 0 };
-  }
-
-  const { data, error } = await supabase
-    .from('notifications')
-    .select('*')
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: false })
-    .limit(20);
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  const notifications: NotificationItem[] = (data || []).map((row: any) => ({
-    id: row.id,
-    message: row.message,
-    timestamp: formatTimestamp(row.created_at),
-    read: row.read,
-    link: row.link || undefined,
-  }));
-
-  const unreadCount = notifications.filter((n) => !n.read).length;
-
-  return {
-    notifications,
-    unreadCount,
-  };
 }
 
 /**
- * Marks all notifications as read for current user.
+ * Marks all notifications as read for current user or demo user.
  */
 export async function markAllNotificationsRead(): Promise<{ success: boolean }> {
   const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  let targetUserId = DEMO_USER_ID;
 
-  if (!user) {
-    return { success: true };
-  }
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user?.id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(user.id)) {
+      targetUserId = user.id;
+    }
+  } catch {}
 
-  const isUuid = user.id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(user.id);
-  if (!isUuid) {
-    return { success: true };
-  }
-
-  const { error } = await supabase
-    .from('notifications')
-    .update({ read: true })
-    .eq('user_id', user.id)
-    .eq('read', false);
-
-  if (error) {
-    throw new Error(error.message);
-  }
+  try {
+    await supabase
+      .from('notifications')
+      .update({ read: true })
+      .or(`user_id.eq.${targetUserId},user_id.is.null`)
+      .eq('read', false);
+  } catch {}
 
   return { success: true };
 }

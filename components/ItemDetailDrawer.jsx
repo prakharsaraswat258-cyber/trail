@@ -35,16 +35,10 @@ export default function ItemDetailDrawer({
   const drawerRef = useRef(null);
   const triggerElementRef = useRef(null);
 
-  const handleOpenClaimModal = async () => {
-    const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      const redirectUrl = pathname || '/browse';
-      router.push(`/login?redirect=${encodeURIComponent(redirectUrl)}`);
-      return;
-    }
+  const handleOpenClaimModal = () => {
     setIsClaimModalOpen(true);
   };
+
 
   // Store trigger element on open for accessible focus restore
   useEffect(() => {

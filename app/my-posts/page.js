@@ -34,29 +34,44 @@ export default function MyPostsPage() {
       setLoading(true);
       try {
         const supabase = createClient();
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-
-        if (!user) {
-          router.push('/login?redirect=/my-posts');
-          return;
+        let user = null;
+        try {
+          const authRes = await supabase.auth.getUser();
+          user = authRes?.data?.user || null;
+        } catch {
+          user = null;
         }
 
-        const userId = user.id;
+        const DEMO_USER_ID = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
+        const userId = user?.id || DEMO_USER_ID;
+
+        const localIds = (() => {
+          try {
+            return JSON.parse(localStorage.getItem('lpufind_my_post_ids') || '[]');
+          } catch {
+            return [];
+          }
+        })();
+
+        let foundQuery = supabase.from('found_items').select('*');
+        let lostQuery = supabase.from('lost_reports').select('*');
+
+        const validUuids = localIds.filter((id) =>
+          typeof id === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
+        );
+
+        if (validUuids.length > 0) {
+          foundQuery = foundQuery.or(`user_id.eq.${userId},id.in.(${validUuids.join(',')}),user_id.is.null`);
+          lostQuery = lostQuery.or(`user_id.eq.${userId},id.in.(${validUuids.join(',')}),user_id.is.null`);
+        } else {
+          foundQuery = foundQuery.or(`user_id.eq.${userId},user_id.is.null`);
+          lostQuery = lostQuery.or(`user_id.eq.${userId},user_id.is.null`);
+        }
 
         // Fetch user's found items and lost reports in parallel
         const [foundRes, lostRes] = await Promise.all([
-          supabase
-            .from('found_items')
-            .select('*')
-            .eq('user_id', userId)
-            .order('created_at', { ascending: false }),
-          supabase
-            .from('lost_reports')
-            .select('*')
-            .eq('user_id', userId)
-            .order('created_at', { ascending: false }),
+          foundQuery.order('created_at', { ascending: false }),
+          lostQuery.order('created_at', { ascending: false }),
         ]);
 
         const foundRows = foundRes.data || [];
@@ -325,6 +340,12 @@ export default function MyPostsPage() {
   const deletePost = async (id) => {
     const target = posts.find((p) => p.post_id === id);
     if (!target) return;
+
+    try {
+      const localIds = JSON.parse(localStorage.getItem('lpufind_my_post_ids') || '[]');
+      const filtered = localIds.filter((x) => x !== id);
+      localStorage.setItem('lpufind_my_post_ids', JSON.stringify(filtered));
+    } catch {}
 
     const supabase = createClient();
 

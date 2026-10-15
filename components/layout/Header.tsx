@@ -104,25 +104,25 @@ export function Header() {
                 role="menu"
                 className="absolute right-0 mt-2 w-48 rounded-lg bg-white border border-border-strong shadow-lg z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-100 py-1"
               >
-                <button
-                  type="button"
-                  onClick={() => handleProfileItemClick('Profile')}
+                <Link
+                  href="/my-posts"
+                  onClick={() => setProfileMenuOpen(false)}
                   className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs sm:text-sm text-text-primary hover:bg-surface-alt text-left font-medium"
                   role="menuitem"
                 >
                   <UserCheck className="w-4 h-4 text-text-secondary" />
-                  My Reports
-                </button>
+                  My Posts
+                </Link>
                 <div className="my-1 border-t border-border" />
-                <button
-                  type="button"
-                  onClick={() => handleProfileItemClick('Sign Out')}
-                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs sm:text-sm text-text-secondary hover:text-error hover:bg-error-light/50 text-left font-medium"
+                <Link
+                  href="/profile"
+                  onClick={() => setProfileMenuOpen(false)}
+                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs sm:text-sm text-text-primary hover:bg-surface-alt text-left font-medium"
                   role="menuitem"
                 >
-                  <LogOut className="w-4 h-4" />
-                  Sign out
-                </button>
+                  <User className="w-4 h-4 text-text-secondary" />
+                  Student Profile
+                </Link>
               </div>
             )}
           </div>
